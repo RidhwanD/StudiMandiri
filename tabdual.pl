@@ -106,7 +106,7 @@ transformApost(H) :-
 	close(Handle), consult('StudiMandiri/tabling.pl'),
 	assertTransformed(H2).
 	
-% ---- Transformasi t` ---- %
+% ---- T` Transformation ---- %
 
 generateTauAposts([], _) :- !.
 generateTauAposts([R|RR], F) :-
@@ -149,9 +149,9 @@ alpha(L, ProL, I, O) :-
 	append(AR, [I,O], NewAR),
 	ProL =.. [S|NewAR].
 	
-% ---- End of transformasi t` ---- %	
+% ---- End of T` Transformation ---- %	
 	
-% ---- Transformasi t+ ---- %
+% ---- T+ Transformation ---- %
 
 generateTauPlus(false) :- !.
 generateTauPlus(H) :- !,
@@ -178,9 +178,9 @@ generatePlusBody2(Fun, L, HBody, HHead):- !,
 	HB =.. [transformApost|[H]],
 	HBody = (HB, !, HHead).
 	
-% ---- End of Transformasi t+ ---- %
+% ---- End of T+ Transformation ---- %
 
-% ---- Transformasi t- ---- %
+% ---- T- Transformation ---- %
 
 generateDualRules(H, R) :- !,
 	functor(H,F,Arity),
@@ -230,9 +230,9 @@ generateTauMinBody(Fun, Var, [rule(R, B)|L], (Copy, BRes, BBRes), I, O, Num, Num
 	NewNum is Num + 1,
 	generateTauMinBody(Fun, Var, L, BBRes, O2, O, NewNum, NumRule).
 
-% ---- End of Transformasi t- ---- %
+% ---- End of T- Transformation ---- %
 
-% ---- Transformasi t* ---- %
+% ---- T* Transformation ---- %
 
 generateTauStar(_, _, _, true, _, _) :- !.	
 generateTauStar(Head, Var, R, (not RBody, RRBody), I, O) :- !,
@@ -282,9 +282,9 @@ generateTauStar2(Fun, Var, I, O, rule(R, _), N) :- !,
 	Body =.. [dual|[N,New,I,O]],
 	writeRule(H, Body).
 
-% ---- End of Transformasi t* ---- %
+% ---- End of T* Transformation ---- %
 
-% ---- Transformasi to ---- %
+% ---- To Transformation ---- %
 
 transformAbducibles :- !,
 	getAbducibles(A),
@@ -320,7 +320,7 @@ createAbdNegHead(A, ProA, I, O) :- !,
 createAbdBody(A, ProA, I, O) :- !,
 	ProA =.. ['insert_abducible'|[A,I,O]].
 	
-% ---- End of transformasi to ---- %
+% ---- End of To Transformation ---- %
 
 % ---- Transforming facts only ---- %
 
