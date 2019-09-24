@@ -1,0 +1,25 @@
+abds([healthy/1, lucky/1, study_hard/1, traffic_jam/1, sleep_late/1]).
+
+beginProlog.
+alive(1).
+alive(2).
+alive(5).
+sick(3).
+sick(4).
+endProlog.
+
+always_present(X) <- healthy(X).
+always_present(X) <- lucky(X).
+good_grades(X) <- study_hard(X).
+good_grades(X) <- always_present(X), lucky(X).
+
+late(1).
+late(X) <- overslept(X).
+late(X) <- traffic_jam(X).
+overslept(X) <- sleep_late(X).
+
+treat(X, Y) <- healthy(X), sick(Y).
+
+death(s(X)) <- sick(X).
+
+<- treat(X, Y), healthy(Y).

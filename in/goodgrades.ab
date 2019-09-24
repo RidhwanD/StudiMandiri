@@ -1,0 +1,6 @@
+abds([have_study_notes/0, healthy/0, getting_lucky/0]).
+
+studying_hard <- have_study_notes.
+always_present_in_class <- healthy.
+getting_good_grades <- studying_hard.
+getting_good_grades <- always_present_in_class,getting_lucky.
