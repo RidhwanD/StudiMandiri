@@ -3,66 +3,66 @@ alive(2).
 alive(5).
 sick(3).
 sick(4).
-alive(_4872,_4888,_4888) :- alive(_4872).
-not_alive(_4872,_4944,_4944) :- not alive(_4872).
-sick(_4984,_5000,_5000) :- sick(_4984).
-not_sick(_4984,_5056,_5056) :- not sick(_4984).
-healthy(_6210,_6226,_6232) :- insert_abducible(healthy(_6210),_6226,_6232).
-not_healthy(_6312,_6340,_6346) :- insert_abducible(not healthy(_6312),_6340,_6346).
-lucky(_6426,_6442,_6448) :- insert_abducible(lucky(_6426),_6442,_6448).
-not_lucky(_6528,_6556,_6562) :- insert_abducible(not lucky(_6528),_6556,_6562).
-study_hard(_6642,_6658,_6664) :- insert_abducible(study_hard(_6642),_6658,_6664).
-not_study_hard(_6744,_6772,_6778) :- insert_abducible(not study_hard(_6744),_6772,_6778).
-traffic_jam(_6858,_6874,_6880) :- insert_abducible(traffic_jam(_6858),_6874,_6880).
-not_traffic_jam(_6960,_6988,_6994) :- insert_abducible(not traffic_jam(_6960),_6988,_6994).
-sleep_late(_7074,_7090,_7096) :- insert_abducible(sleep_late(_7074),_7090,_7096).
-not_sleep_late(_7176,_7204,_7210) :- insert_abducible(not sleep_late(_7176),_7204,_7210).
-always_present(_7376,_7382,_7388) :- transformApost(always_present(_7376)),!,always_present(_7376,_7382,_7388).
-always_present(_7376,_7382,_7388) :- always_present_ab(_7376,_7448),produce_context(_7388,_7382,_7448).
-always_present_star1(_7548,_7702,_7702) :- [_7548]\=[_7362].
-always_present_star1(_7362,_7566,_7572) :- not_healthy(_7362,_7566,_7572).
-always_present_star2(_7548,_7926,_7926) :- [_7548]\=[_7342].
-always_present_star2(_7342,_7640,_7572) :- not_lucky(_7342,_7640,_7572).
-not_always_present(_7548,_7566,_7572) :- copy_term([_7548],[_7628]),always_present_star1(_7628,_7566,_7640),copy_term([_7548],[_7852]),always_present_star2(_7852,_7640,_7572).
+alive(_4874,_4890,_4890) :- alive(_4874).
+not_alive(_4874,_4946,_4946) :- not alive(_4874).
+sick(_4986,_5002,_5002) :- sick(_4986).
+not_sick(_4986,_5058,_5058) :- not sick(_4986).
+healthy(_6212,_6228,_6234) :- insert_abducible(healthy(_6212),_6228,_6234).
+not_healthy(_6314,_6342,_6348) :- insert_abducible(not healthy(_6314),_6342,_6348).
+lucky(_6428,_6444,_6450) :- insert_abducible(lucky(_6428),_6444,_6450).
+not_lucky(_6530,_6558,_6564) :- insert_abducible(not lucky(_6530),_6558,_6564).
+study_hard(_6644,_6660,_6666) :- insert_abducible(study_hard(_6644),_6660,_6666).
+not_study_hard(_6746,_6774,_6780) :- insert_abducible(not study_hard(_6746),_6774,_6780).
+traffic_jam(_6860,_6876,_6882) :- insert_abducible(traffic_jam(_6860),_6876,_6882).
+not_traffic_jam(_6962,_6990,_6996) :- insert_abducible(not traffic_jam(_6962),_6990,_6996).
+sleep_late(_7076,_7092,_7098) :- insert_abducible(sleep_late(_7076),_7092,_7098).
+not_sleep_late(_7178,_7206,_7212) :- insert_abducible(not sleep_late(_7178),_7206,_7212).
+always_present(_7378,_7384,_7390) :- transformApost(always_present(_7378)),!,always_present(_7378,_7384,_7390).
+always_present(_7378,_7384,_7390) :- always_present_ab(_7378,_7450),produce_context(_7390,_7384,_7450).
+always_present_star1(_7550,_7704,_7704) :- [_7550]\=[_7364].
+always_present_star1(_7364,_7568,_7574) :- not_healthy(_7364,_7568,_7574).
+always_present_star2(_7550,_7928,_7928) :- [_7550]\=[_7344].
+always_present_star2(_7344,_7642,_7574) :- not_lucky(_7344,_7642,_7574).
+not_always_present(_7550,_7568,_7574) :- copy_term([_7550],[_7630]),always_present_star1(_7630,_7568,_7642),copy_term([_7550],[_7854]),always_present_star2(_7854,_7642,_7574).
 
-good_grades(_8162,_8168,_8174) :- transformApost(good_grades(_8162)),!,good_grades(_8162,_8168,_8174).
-good_grades(_8162,_8168,_8174) :- good_grades_ab(_8162,_8234),produce_context(_8174,_8168,_8234).
-good_grades_star1(_8334,_8488,_8488) :- [_8334]\=[_8148].
-good_grades_star1(_8148,_8352,_8358) :- not_study_hard(_8148,_8352,_8358).
-good_grades_star2(_8334,_8712,_8712) :- [_8334]\=[_8118].
-good_grades_star2(_8118,_8426,_8358) :- not_always_present(_8118,_8426,_8358).
-good_grades_star2(_8118,_8426,_8358) :- not_lucky(_8118,_8426,_8358).
-not_good_grades(_8334,_8352,_8358) :- copy_term([_8334],[_8414]),good_grades_star1(_8414,_8352,_8426),copy_term([_8334],[_8638]),good_grades_star2(_8638,_8426,_8358).
+good_grades(_8164,_8170,_8176) :- transformApost(good_grades(_8164)),!,good_grades(_8164,_8170,_8176).
+good_grades(_8164,_8170,_8176) :- good_grades_ab(_8164,_8236),produce_context(_8176,_8170,_8236).
+good_grades_star1(_8336,_8490,_8490) :- [_8336]\=[_8150].
+good_grades_star1(_8150,_8354,_8360) :- not_study_hard(_8150,_8354,_8360).
+good_grades_star2(_8336,_8714,_8714) :- [_8336]\=[_8120].
+good_grades_star2(_8120,_8428,_8360) :- not_always_present(_8120,_8428,_8360).
+good_grades_star2(_8120,_8428,_8360) :- not_lucky(_8120,_8428,_8360).
+not_good_grades(_8336,_8354,_8360) :- copy_term([_8336],[_8416]),good_grades_star1(_8416,_8354,_8428),copy_term([_8336],[_8640]),good_grades_star2(_8640,_8428,_8360).
 
-late(_9048,_9054,_9060) :- transformApost(late(_9048)),!,late(_9048,_9054,_9060).
-late(_9048,_9054,_9060) :- late_ab(_9048,_9120),produce_context(_9060,_9054,_9120).
-late_star1(_9220,_9374,_9374) :- [_9220]\=[1].
-late_star2(_9220,_9510,_9510) :- [_9220]\=[_9018].
-late_star2(_9018,_9312,_9244) :- not_overslept(_9018,_9312,_9244).
-late_star3(_9220,_9734,_9734) :- [_9220]\=[_8998].
-late_star3(_8998,_9448,_9244) :- not_traffic_jam(_8998,_9448,_9244).
-not_late(_9220,_9238,_9244) :- copy_term([_9220],[_9300]),late_star1(_9300,_9238,_9312),copy_term([_9220],[_9436]),late_star2(_9436,_9312,_9448),copy_term([_9220],[_9660]),late_star3(_9660,_9448,_9244).
+late(_9050,_9056,_9062) :- transformApost(late(_9050)),!,late(_9050,_9056,_9062).
+late(_9050,_9056,_9062) :- late_ab(_9050,_9122),produce_context(_9062,_9056,_9122).
+late_star1(_9222,_9376,_9376) :- [_9222]\=[1].
+late_star2(_9222,_9512,_9512) :- [_9222]\=[_9020].
+late_star2(_9020,_9314,_9246) :- not_overslept(_9020,_9314,_9246).
+late_star3(_9222,_9736,_9736) :- [_9222]\=[_9000].
+late_star3(_9000,_9450,_9246) :- not_traffic_jam(_9000,_9450,_9246).
+not_late(_9222,_9240,_9246) :- copy_term([_9222],[_9302]),late_star1(_9302,_9240,_9314),copy_term([_9222],[_9438]),late_star2(_9438,_9314,_9450),copy_term([_9222],[_9662]),late_star3(_9662,_9450,_9246).
 
-overslept(_9944,_9950,_9956) :- transformApost(overslept(_9944)),!,overslept(_9944,_9950,_9956).
-overslept(_9944,_9950,_9956) :- overslept_ab(_9944,_10016),produce_context(_9956,_9950,_10016).
-overslept_star1(_10116,_10228,_10228) :- [_10116]\=[_9930].
-overslept_star1(_9930,_10134,_10140) :- not_sleep_late(_9930,_10134,_10140).
-not_overslept(_10116,_10134,_10140) :- overslept_star1(_10116,_10134,_10140).
+overslept(_9946,_9952,_9958) :- transformApost(overslept(_9946)),!,overslept(_9946,_9952,_9958).
+overslept(_9946,_9952,_9958) :- overslept_ab(_9946,_10018),produce_context(_9958,_9952,_10018).
+overslept_star1(_10118,_10230,_10230) :- [_10118]\=[_9932].
+overslept_star1(_9932,_10136,_10142) :- not_sleep_late(_9932,_10136,_10142).
+not_overslept(_10118,_10136,_10142) :- overslept_star1(_10118,_10136,_10142).
 
-treat(_10452,_10458,_10464,_10470) :- transformApost(treat(_10452,_10458)),!,treat(_10452,_10458,_10464,_10470).
-treat(_10452,_10458,_10464,_10470) :- treat_ab(_10452,_10458,_10546),produce_context(_10470,_10464,_10546).
-treat_star1(_10656,_10662,_10796,_10796) :- [_10656,_10662]\=[_10426,_10428].
-treat_star1(_10426,_10662,_10680,_10686) :- not_healthy(_10426,_10680,_10686).
-treat_star1(_10656,_10428,_10680,_10686) :- not_sick(_10428,_10680,_10686).
-not_treat(_10656,_10662,_10680,_10686) :- treat_star1(_10656,_10662,_10680,_10686).
+treat(_10454,_10460,_10466,_10472) :- transformApost(treat(_10454,_10460)),!,treat(_10454,_10460,_10466,_10472).
+treat(_10454,_10460,_10466,_10472) :- treat_ab(_10454,_10460,_10548),produce_context(_10472,_10466,_10548).
+treat_star1(_10658,_10664,_10798,_10798) :- [_10658,_10664]\=[_10428,_10430].
+treat_star1(_10428,_10664,_10682,_10688) :- not_healthy(_10428,_10682,_10688).
+treat_star1(_10658,_10430,_10682,_10688) :- not_sick(_10430,_10682,_10688).
+not_treat(_10658,_10664,_10682,_10688) :- treat_star1(_10658,_10664,_10682,_10688).
 
-death(_11136,_11142,_11148) :- transformApost(death(_11136)),!,death(_11136,_11142,_11148).
-death(_11136,_11142,_11148) :- death_ab(_11136,_11208),produce_context(_11148,_11142,_11208).
-death_star1(_11308,_11420,_11420) :- [_11308]\=[s(_11122)].
-death_star1(_11308,_11326,_11332) :- not_sick(_11122,_11326,_11332).
-not_death(_11308,_11326,_11332) :- death_star1(_11308,_11326,_11332).
+death(_11138,_11144,_11150) :- transformApost(death(_11138)),!,death(_11138,_11144,_11150).
+death(_11138,_11144,_11150) :- death_ab(_11138,_11210),produce_context(_11150,_11144,_11210).
+death_star1(_11310,_11422,_11422) :- [_11310]\=[s(_11124)].
+death_star1(_11310,_11328,_11334) :- not_sick(_11124,_11328,_11334).
+not_death(_11310,_11328,_11334) :- death_star1(_11310,_11328,_11334).
 
-false_star1(_11642,_11648) :- not_treat(_11614,_11616,_11642,_11648).
-false_star1(_11642,_11648) :- not_healthy(_11616,_11642,_11648).
-not_false(_11642,_11648) :- false_star1(_11642,_11648).
+false_star1(_11644,_11650) :- not_treat(_11616,_11618,_11644,_11650).
+false_star1(_11644,_11650) :- not_healthy(_11618,_11644,_11650).
+not_false(_11644,_11650) :- false_star1(_11644,_11650).
 

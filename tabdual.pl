@@ -20,15 +20,15 @@ clear :-
 	
 % Input Output to File
 seeFileInput(F) :-
-	concat_atom(['StudiMandiri/in/', F, '.ab'], FIn),
+	concat_atom(['SMGit/StudiMandiri/in/', F, '.ab'], FIn),
 	see(FIn).
 	
 tellFileOutput(F) :-
-	concat_atom(['StudiMandiri/out/', F, '.pl'], FAb),
+	concat_atom(['SMGit/StudiMandiri/out/', F, '.pl'], FAb),
 	tell(FAb).
 
 load(F) :-
-	concat_atom(['StudiMandiri/out/', F, '.pl'], FOut),
+	concat_atom(['SMGit/StudiMandiri/out/', F, '.pl'], FOut),
 	consult(FOut).	
 	
 % Transforming the abductive program
@@ -100,10 +100,10 @@ transformApost(H) :-
 	\+ checkTransformed(H),
 	unground(H, H2),
 	findRules(H2, R),
-	open('StudiMandiri/tabling.pl', append, Handle),
+	open('SMGit/StudiMandiri/tabling.pl', append, Handle),
 	writeTable(H2, Handle),
 	generateTauAposts(R, Handle),
-	close(Handle), consult('StudiMandiri/tabling.pl'),
+	close(Handle), consult('SMGit/StudiMandiri/tabling.pl'),
 	assertTransformed(H2).
 	
 % ---- T` Transformation ---- %
@@ -272,7 +272,6 @@ generateTauStar(Head, Var, R, RBody, I, O) :- !,
 	Head2 =.. [Head|Arg],
 	writeRule(Head2,Body).
 
-
 generateTauStar2(_, _, _, _, rule(_, true), _) :- !.
 generateTauStar2(Fun, Var, I, O, rule(R, _), N) :- !,
 	R =.. [F|_],
@@ -349,9 +348,11 @@ processHeadNegFact(F, ProF) :-
 	concat_atom(['not_',Fun],F2),
 	append(Arg, [I,I], NewAR),
 	ProF =.. [F2|NewAR].
+	
 % ---- End of Transforming facts only ---- %
 
 % ---- Transformation without IC ---- %
+
 transformWithoutIC :-
 	findRules(false, R),
 	length(R, 0), !,
@@ -362,9 +363,27 @@ generateDualNoIC :-
 	NF =.. ['not_false'|[I,I]],
 	writeRule(NF, true),
 	nl, nl.
+	
 % ---- End of Transformation without IC ---- %
 
+% ---- Query Transformation ---- %
+
+transformQuery(Q, I, O) :-
+	createApostBody(Q, ProQ, I, T),
+	NF =.. ['not_false'|[T,O]],
+	% write(ProQ), write(NF).
+	ProQ, NF.
+	
+% ---- End of Query Transformation ---- %
+
+% ---- Querying abductive program ---- %
+
+query(Q, O) :- query(Q, [], O).
+query(Q, I, O) :-
+	transformQuery(Q, I, O).
+
 % Delete previously defined abducible
+
 removePrevAbducibles(A, _) :-
 	retract(A), !.
 removePrevAbducibles(_, []).
