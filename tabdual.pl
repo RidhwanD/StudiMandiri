@@ -1,7 +1,7 @@
 :- dynamic defined/1, rule/2, rule/3, isPred/1, abds/1, numvars/1, isTransformed/1.
 
 useFiles :-
-	consult('StudiMandiri/systems.pl').
+	consult('SMGit/StudiMandiri/systems.pl').
 
 :- op(950, fy, not).
 :- op(1110, fy, '<-').
@@ -204,7 +204,7 @@ generateTauMinBody(Fun, Var, [rule(R, B)|[]], BRes, I, O, Num, 1) :- !,
 	append(Var, [T, T], EqAR),
 	BEq =.. [SStar|EqAR],
 	writeSecDual1(BEq, Var, Arg),
-	generateTauStar(SStar, Var, Arg, B, I, O).
+	generateTauStar(SStar, Var, Arg, B, I, O, []).
 generateTauMinBody(Fun, Var, [rule(R, B)|[]], (Copy, BRes), I, O, Num, _) :- !,
 	concat_atom([Fun, '_star', Num], SStar),
 	length(Var,N), generateVarList(N,L2),
@@ -215,7 +215,7 @@ generateTauMinBody(Fun, Var, [rule(R, B)|[]], (Copy, BRes), I, O, Num, _) :- !,
 	append(Var, [T, T], EqAR),
 	BEq =.. [SStar|EqAR],
 	writeSecDual1(BEq, Var, Arg),
-	generateTauStar(SStar, Var, Arg, B, I, O).
+	generateTauStar(SStar, Var, Arg, B, I, O, []).
 generateTauMinBody(Fun, Var, [rule(R, B)|L], (Copy, BRes, BBRes), I, O, Num, NumRule) :-
 	concat_atom([Fun, '_star', Num], SStar),
 	length(Var,N), generateVarList(N,L2),
@@ -226,7 +226,7 @@ generateTauMinBody(Fun, Var, [rule(R, B)|L], (Copy, BRes, BBRes), I, O, Num, Num
 	append(Var, [T, T], EqAR),
 	BEq =.. [SStar|EqAR],
 	writeSecDual1(BEq, Var, Arg),
-	generateTauStar(SStar, Var, Arg, B, I, O),
+	generateTauStar(SStar, Var, Arg, B, I, O, []),
 	NewNum is Num + 1,
 	generateTauMinBody(Fun, Var, L, BBRes, O2, O, NewNum, NumRule).
 
@@ -234,44 +234,44 @@ generateTauMinBody(Fun, Var, [rule(R, B)|L], (Copy, BRes, BBRes), I, O, Num, Num
 
 % ---- T* Transformation ---- %
 
-generateTauStar(_, _, _, true, _, _) :- !.	
-generateTauStar(Head, Var, R, (not RBody, RRBody), I, O) :- !,
-	RBody =.. [F|A1],
+generateTauStar(_, _, _, true, _, _, _) :- !.	
+generateTauStar(Head, Var, R, (RBody, RRBody), I, O, PrevB) :- !,
+	RBody =.. [_|A1],
 	subtituteArg(Var,R,A1,Var2),
 	append(Var2, [I, O], Arg),
-	append(A1, [I, O], Arg2),
-	Body =.. [F|Arg2],
 	Head2 =.. [Head|Arg],
+	generateTauStarBody(PrevB, RBody, I, O, Body),
 	writeRule(Head2,Body),
-	generateTauStar(Head, Var, R, RRBody, I, O).
-generateTauStar(Head, Var, R, (RBody, RRBody), I, O) :- !,
-	RBody =.. [F|A1],
+	append(PrevB,[RBody],Res),
+	generateTauStar(Head, Var2, R, RRBody, I, O, Res).
+generateTauStar(Head, Var, R, RBody, I, O, PrevB) :- !,
+	RBody =.. [_|A1],
 	subtituteArg(Var,R,A1,Var2),
 	append(Var2, [I, O], Arg),
-	concat_atom(['not_',F],F2),
-	append(A1, [I, O], Arg2),
-	Body =.. [F2|Arg2],
 	Head2 =.. [Head|Arg],
-	writeRule(Head2,Body),
-	generateTauStar(Head, Var, R, RRBody, I, O).
-generateTauStar(Head, Var, R, not RBody, I, O) :- !,
-	RBody =.. [F|A1],
-	subtituteArg(Var,R,A1,Var2),
-	append(Var2, [I, O], Arg),
-	append(A1, [I, O], Arg2),
-	Body =.. [F|Arg2],
-	Head2 =.. [Head|Arg],
-	writeRule(Head2,Body).
-generateTauStar(Head, Var, R, RBody, I, O) :- !,
-	RBody =.. [F|A1],
-	subtituteArg(Var,R,A1,Var2),
-	append(Var2, [I, O], Arg),
-	concat_atom(['not_',F],F2),
-	append(A1, [I, O], Arg2),
-	Body =.. [F2|Arg2],
-	Head2 =.. [Head|Arg],
+	generateTauStarBody(PrevB, RBody, I, O, Body),
 	writeRule(Head2,Body).
 
+generateTauStarBody([PrevB|RPrevB], CurB, I, O, (PrevBn, ResB)) :-
+	PrevB =.. [F|Arg],
+	append(Arg, [I, I1], Arg2),
+	PrevBn =.. [F|Arg2],
+	generateTauStarBody(RPrevB, CurB, I1, O, ResB).
+generateTauStarBody([not PrevB|RPrevB], CurB, I, O, (not PrevBn, ResB)) :-
+	PrevB =.. [F|Arg],
+	append(Arg, [I, I1], Arg2),
+	PrevBn =.. [F|Arg2],
+	generateTauStarBody(RPrevB, CurB, I1, O, ResB).
+generateTauStarBody([], CurB, I, O, ResB) :-
+	CurB =.. [F|Arg],
+	append(Arg, [I, O], Arg2),
+	concat_atom(['not_', F], F2),
+	ResB =.. [F2|Arg2].
+generateTauStarBody([], not CurB, I, O, ResB) :-
+	CurB =.. [F|Arg],
+	append(Arg, [I, O], Arg2),
+	ResB =.. [F|Arg2].
+	
 generateTauStar2(_, _, _, _, rule(_, true), _) :- !.
 generateTauStar2(Fun, Var, I, O, rule(R, _), N) :- !,
 	R =.. [F|_],

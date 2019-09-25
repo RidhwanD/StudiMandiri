@@ -104,6 +104,9 @@ readRule(H) :- !,
 	
 readRule(_).
 
+writeRuleStar(Head, ListBody, LastBody) :-
+	write(Head), write(' :- '), writeList(ListBody), write(LastBody), write('.'), nl.
+
 writeRule(Head, true) :- !,
 	write(Head), write('.'), nl.
 writeRule(Head, Body) :-
@@ -159,3 +162,10 @@ subtituteArg([_|T1],[H2|T2],Var,[H2|T3]) :-
 subtituteArg([H1|T1],[H2|T2],Var,[H1|T3]) :-
 	\+ memberVar(H2,Var),
 	subtituteArg(T1,T2,Var,T3).
+	
+append2(A1-Z1, Z1-Z2, A1-Z2).
+
+writeList([]).
+writeList([H|T]) :-
+	write(H), write(','),
+	writeList(T).

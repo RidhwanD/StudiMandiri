@@ -22,4 +22,4 @@ treat(X, Y) <- healthy(X), sick(Y).
 
 death(s(X)) <- sick(X).
 
-<- treat(X, Y), healthy(Y).
+<- healthy(X), sick(X).
