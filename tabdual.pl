@@ -1,4 +1,4 @@
-:- dynamic defined/1, rule/2, fact/1, isPred/1, abds/1, numvars/1, isTransformed/1, untrans/1.
+:- dynamic defined/1, rule/2, fact/1, isPred/1, abds/1, isTransformed/1, untrans/1.
 
 useFiles :-
 	consult('SMGit/StudiMandiri/systems.pl').
@@ -11,9 +11,10 @@ clear :-
 	retractall(defined(_)),
 	retractall(rule(_, _)),
 	retractall(fact(_)), 
+	retractall(isTransformed(_)),
+	retractall(untrans(_)),
 	retractall(abds(_)),
 	retractall(isPred(_)),
-	retractall(numvars(_)),
 	assert(numvars(0)).
 
 :- useFiles, retractall(mode(_)), assert(mode(table)), clear.
@@ -78,8 +79,8 @@ readJustFacts :-
 transform :-
 	transformAbducibles,
 	transformRule,
-	transTransit,
-	transformRest,
+	transTransit,   % uncomment for 2
+	transformRest,	% uncomment for 2
 	transformWithoutIC.
 	
 % ---- Transforming the rules ---- %
@@ -88,9 +89,9 @@ transformRule :-
 	removeIsPred(H),
 	findRules(H, R),
 	transWithAbd(H, R),
-	% writeTable(H),
-	% generateTauAposts(R),
-	% generateTauPlus(H),
+	% writeTable(H),			% uncomment for regular
+	% generateTauAposts(R),		% uncomment for regular
+	% generateTauPlus(H),		% uncomment for regular and 1
 	generateDualRules(H, R),
 	nl,
 	transformRule.
@@ -248,8 +249,8 @@ generateTauPlus(H) :- !,
 	generateVarList(Arity,L),
 	generatePlusHead(F, L, I, O, HHead),
 	generatePlusBody(F, L, I, O, HBody),
-	% generatePlusBody2(F, L, HBody2, HHead),
-	% writeRule(HHead, HBody2),
+	% generatePlusBody2(F, L, HBody2, HHead),	% uncomment for 1
+	% writeRule(HHead, HBody2),					% uncomment for 1
 	writeRule(HHead, HBody).
 	
 generatePlusHead(F, L, I, O, HRes) :- !,
