@@ -20,6 +20,8 @@ overslept(X) <- sleep_late(X).
 
 treat(X, Y) <- healthy(X), sick(Y).
 
+doctor(X) <- treat(X, Y), sick(Y).
+
 death(s(X)) <- sick(X).
 
-<- healthy(X), sick(X).
+<- healthy(X).

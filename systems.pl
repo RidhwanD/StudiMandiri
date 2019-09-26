@@ -149,11 +149,29 @@ insert_abducible(A, I, O) :-
 	\+ member(NA, I),
 	append(I, [A], O).
 
-memberVar(X, [H|_]) :- !,
-	X == H.
+
+lelah([X|_],H) :-
+	memberVar(X, H), !.
+lelah([X|T],H) :-
+	\+ memberVar(X, H), !,
+	lelah(T, H).
+lelah(X, H) :-
+	X \= [],
+	X =.. [_|L],
+	lelah(L, H), !.
+	
+	
+memberVar(X, H) :-
+	\+ var(X), !, lelah(X, H).
+memberVar(X, [H|_]) :- 
+	var(H),
+	X == H, !.
 memberVar(X, [H|T]) :-
+	var(H),
 	\+ X == H,
 	memberVar(X, T).
+	
+
 	
 subtituteArg([],[],_,[]) :- !.
 subtituteArg([_|T1],[H2|T2],Var,[H2|T3]) :-
