@@ -1,4 +1,4 @@
-:- dynamic defined/1, rule/2, rule/3, isPred/1, abds/1, numvars/1, isTransformed/1.
+:- dynamic defined/1, rule/2, fact/1, isPred/1, abds/1, numvars/1, isTransformed/1, untrans/1.
 
 useFiles :-
 	consult('SMGit/StudiMandiri/systems.pl').
@@ -10,7 +10,7 @@ useFiles :-
 clear :-
 	retractall(defined(_)),
 	retractall(rule(_, _)),
-	retractall(rule(_, _, _)), 
+	retractall(fact(_)), 
 	retractall(abds(_)),
 	retractall(isPred(_)),
 	retractall(numvars(_)),
@@ -78,6 +78,8 @@ readJustFacts :-
 transform :-
 	transformAbducibles,
 	transformRule,
+	transTransit,
+	transformRest,
 	transformWithoutIC.
 	
 % ---- Transforming the rules ---- %
@@ -85,8 +87,10 @@ transformRule :-
 	retract(defined(H)),
 	removeIsPred(H),
 	findRules(H, R),
+	transWithAbd(H, R),
+	% writeTable(H),
 	% generateTauAposts(R),
-	generateTauPlus(H),
+	% generateTauPlus(H),
 	generateDualRules(H, R),
 	nl,
 	transformRule.
@@ -96,6 +100,9 @@ removeIsPred(P) :-
 	retract(isPred(P)), !.
 removeIsPred(_).
 
+% ---- Transform By Need ---- %
+
+% First
 transformApost(H) :-
 	\+ checkTransformed(H),
 	unground(H, H2),
@@ -105,6 +112,73 @@ transformApost(H) :-
 	generateTauAposts(R, Handle),
 	close(Handle), consult('SMGit/StudiMandiri/tabling.pl'),
 	assertTransformed(H2).
+	
+% Second
+
+writeRules([]).
+writeRules([rule(_,true)|T]) :-
+	writeRules(T).
+writeRules([rule(H,B)|T]) :-
+	writeRule(H, B),
+	writeRules(T).
+	
+transTransit :-
+	findall(X, untrans(X), L),
+	transformTransitive(L, L2),
+	L \= L2,
+	transTransit.
+transTransit.
+
+transformTransitive([],[]) :- !.
+transformTransitive([H|T], [H|L2]) :-
+	findRules(H, [rule(_,B)|_]),
+	toList(B, BList),
+	allNotTred(BList), !,
+	transformTransitive(T, L2).
+transformTransitive([H|T], L2) :-
+	findRules(H, [rule(R,B)|T2]),
+	toList(B, BList),
+	\+ allNotTred(BList),
+	writeTable(H),
+	generateTauAposts([rule(R,B)|T2]),
+	generateTauPlus(H),
+	retract(untrans(H)),
+	transformTransitive(T, L2).
+	
+allNotTred([]) :- !.
+allNotTred([true]) :- !.
+allNotTred([not H|T]) :- !,
+	(untrans(H); fact(H)),
+	allNotTred(T).
+allNotTred([H|T]) :-
+	(untrans(H); fact(H)),
+	allNotTred(T).
+	
+transformRest :-
+	retract(untrans(H)),
+	findRules(H, R),
+	writeRules(R),
+	generatePosFact(H),
+	transformRest.
+transformRest.
+
+transWithAbd(H, R) :-
+	containAbd(R), !,
+	writeTable(H),
+	generateTauAposts(R),
+	generateTauPlus(H).
+transWithAbd(H, _) :-
+	assertUntrans(H).
+
+containAbd([rule(_,B)|_]) :-
+	toList(B, BList),
+	splitAr(BList, _, Ar),
+	Ar \= [], !.
+containAbd([rule(_,B)|RR]) :-
+	toList(B, BList),
+	splitAr(BList, _, Ar),
+	Ar == [],
+	containAbd(RR).
 	
 % ---- T` Transformation ---- %
 
@@ -121,6 +195,21 @@ generateTauApost(rule(H, B),F) :- !,
 	createApostBody(BrConj, ResBr, Ar, O),
 	createApostHead(H, HRes, O),
 	writeRule(HRes, ResBr, F),
+	nl.
+	
+generateTauAposts([]) :- !.
+generateTauAposts([R|RR]) :-
+	generateTauApost(R),
+	generateTauAposts(RR).
+
+generateTauApost(rule(false, _)) :- !.
+generateTauApost(rule(H, B)) :- !,
+	toList(B, BList),
+	splitAr(BList, Br, Ar),
+	toConj(Br, BrConj),
+	createApostBody(BrConj, ResBr, Ar, O),
+	createApostHead(H, HRes, O),
+	writeRule(HRes, ResBr),
 	nl.
 
 splitAr([], [], []).
@@ -159,8 +248,8 @@ generateTauPlus(H) :- !,
 	generateVarList(Arity,L),
 	generatePlusHead(F, L, I, O, HHead),
 	generatePlusBody(F, L, I, O, HBody),
-	generatePlusBody2(F, L, HBody2, HHead),
-	writeRule(HHead, HBody2),
+	% generatePlusBody2(F, L, HBody2, HHead),
+	% writeRule(HHead, HBody2),
 	writeRule(HHead, HBody).
 	
 generatePlusHead(F, L, I, O, HRes) :- !,
@@ -252,17 +341,17 @@ generateTauStar(Head, Var, R, RBody, I, O, PrevB) :- !,
 	generateTauStarBody(PrevB, RBody, I, O, Body),
 	writeRule(Head2,Body).
 
-generateTauStarBody([PrevB|RPrevB], CurB, I, O, (PrevBn, ResB)) :-
+generateTauStarBody([PrevB|RPrevB], CurB, I, O, (PrevBn, ResB)) :- !,
 	PrevB =.. [F|Arg],
 	append(Arg, [I, I1], Arg2),
 	PrevBn =.. [F|Arg2],
 	generateTauStarBody(RPrevB, CurB, I1, O, ResB).
-generateTauStarBody([not PrevB|RPrevB], CurB, I, O, (not PrevBn, ResB)) :-
+generateTauStarBody([not PrevB|RPrevB], CurB, I, O, (not PrevBn, ResB)) :- !,
 	PrevB =.. [F|Arg],
 	append(Arg, [I, I1], Arg2),
 	PrevBn =.. [F|Arg2],
 	generateTauStarBody(RPrevB, CurB, I1, O, ResB).
-generateTauStarBody([], CurB, I, O, ResB) :-
+generateTauStarBody([], CurB, I, O, ResB) :- !,
 	CurB =.. [F|Arg],
 	append(Arg, [I, O], Arg2),
 	concat_atom(['not_', F], F2),
@@ -327,6 +416,7 @@ transformJustFact :-
 	retract(defined(F)),
 	generatePosFact(F),
 	generateNegFact(F),
+	assertFact(F),
 	transformJustFact.
 transformJustFact.
 

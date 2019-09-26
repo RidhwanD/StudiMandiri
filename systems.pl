@@ -34,6 +34,18 @@ assertDefined(H) :-
 	unground(H, H2),
 	assert(defined(H2)).
 	
+assertUntrans(H) :-
+	untrans(H), !.
+assertUntrans(H) :-
+	unground(H, H2),
+	assert(untrans(H2)).
+
+assertFact(H) :-
+	fact(H), !.
+assertFact(H) :-
+	unground(H, H2),
+	assert(fact(H2)).
+
 checkTransformed(H) :-
 	isTransformed(H).
 assertTransformed(H) :-
@@ -119,8 +131,15 @@ writeRule(Head, Body, F) :-
 	
 writeTable(H, F) :-
 	functor(H, Fun, Arity),
+	A2 is Arity + 1,
 	concat_atom([Fun,'_ab'],Pred),
-	write(F, ':- table '), write(F, Pred), write(F, '/'), write(F, Arity), write(F, '.'), nl(F).
+	write(F, ':- table '), write(F, Pred), write(F, '/'), write(F, A2), write(F, '.'), nl(F).
+
+writeTable(H) :-
+	functor(H, Fun, Arity),
+	A2 is Arity + 1,
+	concat_atom([Fun,'_ab'],Pred),
+	write(':- table '), write(Pred), write('/'), write(A2), write('.'), nl.
 
 writeSecDual1(_, [], []) :- !.
 writeSecDual1(Head, Var1, Var2) :-
@@ -149,20 +168,18 @@ insert_abducible(A, I, O) :-
 	\+ member(NA, I),
 	append(I, [A], O).
 
-
-lelah([X|_],H) :-
+notVar([X|_],H) :-
 	memberVar(X, H), !.
-lelah([X|T],H) :-
+notVar([X|T],H) :-
 	\+ memberVar(X, H), !,
-	lelah(T, H).
-lelah(X, H) :-
+	notVar(T, H).
+notVar(X, H) :-
 	X \= [],
 	X =.. [_|L],
-	lelah(L, H), !.
-	
+	notVar(L, H), !.
 	
 memberVar(X, H) :-
-	\+ var(X), !, lelah(X, H).
+	\+ var(X), !, notVar(X, H).
 memberVar(X, [H|_]) :- 
 	var(H),
 	X == H, !.
@@ -170,8 +187,6 @@ memberVar(X, [H|T]) :-
 	var(H),
 	\+ X == H,
 	memberVar(X, T).
-	
-
 	
 subtituteArg([],[],_,[]) :- !.
 subtituteArg([_|T1],[H2|T2],Var,[H2|T3]) :-

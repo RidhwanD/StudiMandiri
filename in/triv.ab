@@ -1,0 +1,10 @@
+abds([q/1]).
+
+beginProlog.
+s(1).
+endProlog.
+
+a(X) <- p(X).
+p(X) <- q(X).
+p(X) <- r(X).
+r(X) <- s(X).

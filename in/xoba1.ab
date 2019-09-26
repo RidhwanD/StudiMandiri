@@ -22,6 +22,6 @@ treat(X, Y) <- healthy(X), sick(Y).
 
 doctor(X) <- treat(X, Y), sick(Y).
 
-death(s(X)) <- sick(X).
+death(s(X),s(X,Y)) <- sick(X), healthy(Y).
 
 <- healthy(X).
