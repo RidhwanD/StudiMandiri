@@ -25,11 +25,11 @@ seeFileInput(F) :-
 	see(FIn).
 	
 tellFileOutput(F) :-
-	concat_atom(['SMGit/StudiMandiri/out/', F, '.pl'], FAb),
+	concat_atom(['SMGit/StudiMandiri/out/', F, '_2.pl'], FAb),
 	tell(FAb).
 
 load(F) :-
-	concat_atom(['SMGit/StudiMandiri/out/', F, '.pl'], FOut),
+	concat_atom(['SMGit/StudiMandiri/out/', F, '_2.pl'], FOut),
 	consult(FOut).	
 	
 % Transforming the abductive program
@@ -88,7 +88,7 @@ transformRule :-
 	retract(defined(H)),
 	removeIsPred(H),
 	findRules(H, R),
-	transWithAbd(H, R),
+	transWithAbd(H, R),		% uncomment for 2
 	% writeTable(H),			% uncomment for regular
 	% generateTauAposts(R),		% uncomment for regular
 	% generateTauPlus(H),		% uncomment for regular and 1
@@ -342,25 +342,25 @@ generateTauStar(Head, Var, R, RBody, I, O, PrevB) :- !,
 	generateTauStarBody(PrevB, RBody, I, O, Body),
 	writeRule(Head2,Body).
 
-generateTauStarBody([PrevB|RPrevB], CurB, I, O, (PrevBn, ResB)) :- !,
-	PrevB =.. [F|Arg],
-	append(Arg, [I, I1], Arg2),
-	PrevBn =.. [F|Arg2],
-	generateTauStarBody(RPrevB, CurB, I1, O, ResB).
 generateTauStarBody([not PrevB|RPrevB], CurB, I, O, (not PrevBn, ResB)) :- !,
 	PrevB =.. [F|Arg],
 	append(Arg, [I, I1], Arg2),
 	PrevBn =.. [F|Arg2],
 	generateTauStarBody(RPrevB, CurB, I1, O, ResB).
+generateTauStarBody([PrevB|RPrevB], CurB, I, O, (PrevBn, ResB)) :- !,
+	PrevB =.. [F|Arg],
+	append(Arg, [I, I1], Arg2),
+	PrevBn =.. [F|Arg2],
+	generateTauStarBody(RPrevB, CurB, I1, O, ResB).
+generateTauStarBody([], not CurB, I, O, ResB) :-
+	CurB =.. [F|Arg],
+	append(Arg, [I, O], Arg2),
+	ResB =.. [F|Arg2].
 generateTauStarBody([], CurB, I, O, ResB) :- !,
 	CurB =.. [F|Arg],
 	append(Arg, [I, O], Arg2),
 	concat_atom(['not_', F], F2),
 	ResB =.. [F2|Arg2].
-generateTauStarBody([], not CurB, I, O, ResB) :-
-	CurB =.. [F|Arg],
-	append(Arg, [I, O], Arg2),
-	ResB =.. [F|Arg2].
 	
 generateTauStar2(_, _, _, _, rule(_, true), _) :- !.
 generateTauStar2(Fun, Var, I, O, rule(R, _), N) :- !,
