@@ -150,23 +150,55 @@ writeSecDual1(Head, Var1, Var2) :-
 negate((not L),L) :- !.
 negate(L,(not L)).
 
-produce_context(I, I, []) :- !.
-produce_context(E, [], E) :- !.
-produce_context(O, I, [E|EE]) :-
-	member(E, I), !,
-	produce_context(O, I, EE).
-produce_context(O, I, [E|EE]) :-
+% produce_context(I, I, []) :- !.
+% produce_context(E, [], E) :- !.
+% produce_context(O, I, [E|EE]) :-
+%	member(E, I), !,
+%	produce_context(O, I, EE).
+% produce_context(O, I, [E|EE]) :-
+%	negate(E, NE),
+%	\+ member(NE, I),
+%	append(I, [E], IE),
+%	produce_context(O, IE, EE).
+
+produce_context(I, I, [[],[]]) :- !.
+produce_context(E, [[],[]], E) :- !.
+produce_context(O, [Pi,Ni], [[E|EE],L]) :-
+	member(E, Pi), !,
+	produce_context(O, [Pi,Ni], [EE,L]).
+produce_context(O, [Pi,Ni], [[E|EE],L]) :-
 	negate(E, NE),
-	\+ member(NE, I),
-	append(I, [E], IE),
-	produce_context(O, IE, EE).
-	
-insert_abducible(A, I, I) :-
-	member(A, I), !.
-insert_abducible(A, I, O) :-
+	\+ member(NE, Ni),
+	append(Ni, [E], NiE),
+	produce_context(O, [Pi,NiE], [EE,L]).
+produce_context(O, [Pi,Ni], [L,[E|EE]]) :-
+	member(E, Ni), !,
+	produce_context(O, [Pi,Ni], [L,EE]).
+produce_context(O, [Pi,Ni], [L,[E|EE]]) :-
+	negate(E, NE),
+	\+ member(NE, Pi),
+	append(Pi, [E], PiE),
+	produce_context(O, [PiE,Ni], [L,EE]).
+
+% insert_abducible(A, I, I) :-
+% 	member(A, I), !.
+%insert_abducible(A, I, O) :-
+%	negate(A, NA),
+%	\+ member(NA, I),
+%	append(I, [A], O).
+
+insert_abducible(not A, [Pos, Neg], [Pos, Neg]) :-
+	member(not A, Neg), !.
+insert_abducible(not A, [Pos, Neg], [Pos, O]) :-
+	negate(not A, NA),
+	\+ member(NA, Pos), !,
+	append(Neg, [not A], O).
+insert_abducible(A, [Pos, Neg], [Pos, Neg]) :-
+	member(A, Pos), !.
+insert_abducible(A, [Pos, Neg], [O, Neg]) :-
 	negate(A, NA),
-	\+ member(NA, I),
-	append(I, [A], O).
+	\+ member(NA, Neg),
+	append(Pos, [A], O).
 
 notVar([X|_],H) :-
 	memberVar(X, H), !.
@@ -196,7 +228,13 @@ subtituteArg([H1|T1],[H2|T2],Var,[H1|T3]) :-
 	\+ memberVar(H2,Var),
 	subtituteArg(T1,T2,Var,T3).
 	
-append2(A1-Z1, Z1-Z2, A1-Z2).
+appendContext([_,N], not R, O) :- !,
+	append(N, not R, O).
+appendContext([P,_], R, O) :-
+	append(P, R, O).
+
+appendResult([P,N], O) :-
+	append(P, N, O).
 
 writeList([]).
 writeList([H|T]) :-

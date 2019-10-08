@@ -25,11 +25,11 @@ seeFileInput(F) :-
 	see(FIn).
 	
 tellFileOutput(F) :-
-	concat_atom(['SMGit/StudiMandiri/out/', F, '_2.pl'], FAb),
+	concat_atom(['SMGit/StudiMandiri/out/', F, '.pl'], FAb),
 	tell(FAb).
 
 load(F) :-
-	concat_atom(['SMGit/StudiMandiri/out/', F, '_2.pl'], FOut),
+	concat_atom(['SMGit/StudiMandiri/out/', F, '.pl'], FOut),
 	consult(FOut).	
 	
 % Transforming the abductive program
@@ -79,19 +79,20 @@ readJustFacts :-
 transform :-
 	transformAbducibles,
 	transformRule,
-	transTransit,   % uncomment for 2
-	transformRest,	% uncomment for 2
+	% transTransit,   % uncomment for 2
+	% transformRest,	% uncomment for 2
 	transformWithoutIC.
 	
 % ---- Transforming the rules ---- %
+
 transformRule :-
 	retract(defined(H)),
 	removeIsPred(H),
 	findRules(H, R),
-	transWithAbd(H, R),		% uncomment for 2
-	% writeTable(H),			% uncomment for regular
-	% generateTauAposts(R),		% uncomment for regular
-	% generateTauPlus(H),		% uncomment for regular and 1
+	% transWithAbd(H, R),		% uncomment for 2
+	writeTable(H),			% uncomment for regular
+	generateTauAposts(R),		% uncomment for regular
+	generateTauPlus(H),		% uncomment for regular and 1
 	generateDualRules(H, R),
 	nl,
 	transformRule.
@@ -207,8 +208,9 @@ generateTauApost(rule(false, _)) :- !.
 generateTauApost(rule(H, B)) :- !,
 	toList(B, BList),
 	splitAr(BList, Br, Ar),
+	% splitAbd(Ar, Ar2),							% for spliter
 	toConj(Br, BrConj),
-	createApostBody(BrConj, ResBr, Ar, O),
+	createApostBody(BrConj, ResBr, Ar, O),		% Ar2 for spliter
 	createApostHead(H, HRes, O),
 	writeRule(HRes, ResBr),
 	nl.
@@ -219,6 +221,14 @@ splitAr([B|BB], Br, [B|Ar]) :-
 	splitAr(BB, Br, Ar).
 splitAr([B|BB],[B|Br], Ar) :-
 	splitAr(BB, Br, Ar).
+
+splitAbd(Abd, [Pos, Neg]) :-
+	splitAbd(Abd, Pos, Neg).
+splitAbd([],[],[]) :- !.
+splitAbd([not R|T],L1,[not R|T2]) :- !,
+	splitAbd(T, L1, T2).
+splitAbd([R|T],[R|T1],L2) :- !,
+	splitAbd(T, T1, L2).
 
 createApostHead(H, ProH, O) :- !,
 	H =.. [S|A],
@@ -461,15 +471,16 @@ generateDualNoIC :-
 
 transformQuery(Q, I, O) :-
 	createApostBody(Q, ProQ, I, T),
-	NF =.. ['not_false'|[T,O]],
+	NF =.. ['not_false'|[T,O1]], 			% O1 for spliter
 	% write(ProQ), write(NF).
-	ProQ, NF.
+	ProQ, NF, 
+	appendResult(O1,O).					% uncomment for spliter
 	
 % ---- End of Query Transformation ---- %
 
 % ---- Querying abductive program ---- %
 
-query(Q, O) :- query(Q, [], O).
+query(Q, O) :- query(Q, [[],[]], O).				% [[],[]] for spliter
 query(Q, I, O) :-
 	transformQuery(Q, I, O).
 

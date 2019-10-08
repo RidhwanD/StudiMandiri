@@ -1,0 +1,15 @@
+abds([q/2, r/2, t/2, b/1, m/1, n/1, g/1]).
+
+p(X) <- q(X,Y), a(Y).
+s(X,Y) <- a(Y), t(Y,X).
+a(X) <- b(X), i(X).
+
+k(X) <- not l(X), m(X).
+k(X) <- b(X).
+l(X) <- n(X).
+
+i(1).
+h(X) <- i(X), g(X).
+h(X) <- j(X).
+j(X) <- g(X), not m(X).
+
