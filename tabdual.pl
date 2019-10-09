@@ -1,4 +1,4 @@
-:- dynamic defined/1, rule/2, fact/1, isPred/1, abds/1, isTransformed/1, untrans/1.
+:- dynamic defined/1, rule/2, fact/1, isPred/1, abds/1.
 
 useFiles :-
 	consult('SMGit/StudiMandiri/systems.pl').
@@ -18,6 +18,24 @@ clear :-
 	assert(numvars(0)).
 
 :- useFiles, retractall(mode(_)), assert(mode(table)), clear.
+
+% Checking active mode
+mode :-
+	mode(Mode),
+	write_ln(['Current mode: ', Mode]).
+
+% Beralih ke mode tabling
+switch_mode(t) :- !,
+	retractall(mode(_)),
+	assert(mode(table)).
+% Beralih ke mode answer subsumption
+switch_mode(sp) :- !,
+	retractall(mode(_)),
+	assert(mode(split)).
+% Jika user salah input mode
+switch_mode(Mode) :-
+	write_ln(['Unknown mode: ', Mode, '. Only t (\'tabling\') and sp (\'split\') are available.']),
+	fail.
 	
 % Input Output to File
 seeFileInput(F) :-
@@ -25,10 +43,20 @@ seeFileInput(F) :-
 	see(FIn).
 	
 tellFileOutput(F) :-
+	mode(split), !,
+	concat_atom(['SMGit/StudiMandiri/out/', F, '_s.pl'], FAb),
+	tell(FAb).
+tellFileOutput(F) :-
+	mode(table), !,
 	concat_atom(['SMGit/StudiMandiri/out/', F, '.pl'], FAb),
 	tell(FAb).
 
 load(F) :-
+	mode(split), !,
+	concat_atom(['SMGit/StudiMandiri/out/', F, '_s.pl'], FOut),
+	consult(FOut).	
+load(F) :-
+	mode(table), !,
 	concat_atom(['SMGit/StudiMandiri/out/', F, '.pl'], FOut),
 	consult(FOut).	
 	
@@ -79,8 +107,6 @@ readJustFacts :-
 transform :-
 	transformAbducibles,
 	transformRule,
-	% transTransit,   % uncomment for 2
-	% transformRest,	% uncomment for 2
 	transformWithoutIC.
 	
 % ---- Transforming the rules ---- %
@@ -89,10 +115,9 @@ transformRule :-
 	retract(defined(H)),
 	removeIsPred(H),
 	findRules(H, R),
-	% transWithAbd(H, R),		% uncomment for 2
-	writeTable(H),			% uncomment for regular
-	generateTauAposts(R),		% uncomment for regular
-	generateTauPlus(H),		% uncomment for regular and 1
+	writeTable(H),
+	generateTauAposts(R),
+	generateTauPlus(H),
 	generateDualRules(H, R),
 	nl,
 	transformRule.
@@ -102,115 +127,30 @@ removeIsPred(P) :-
 	retract(isPred(P)), !.
 removeIsPred(_).
 
-% ---- Transform By Need ---- %
-
-% First
-transformApost(H) :-
-	\+ checkTransformed(H),
-	unground(H, H2),
-	findRules(H2, R),
-	open('SMGit/StudiMandiri/tabling.pl', append, Handle),
-	writeTable(H2, Handle),
-	generateTauAposts(R, Handle),
-	close(Handle), consult('SMGit/StudiMandiri/tabling.pl'),
-	assertTransformed(H2).
-	
-% Second
-
-writeRules([]).
-writeRules([rule(_,true)|T]) :-
-	writeRules(T).
-writeRules([rule(H,B)|T]) :-
-	writeRule(H, B),
-	writeRules(T).
-	
-transTransit :-
-	findall(X, untrans(X), L),
-	transformTransitive(L, L2),
-	L \= L2,
-	transTransit.
-transTransit.
-
-transformTransitive([],[]) :- !.
-transformTransitive([H|T], [H|L2]) :-
-	findRules(H, [rule(_,B)|_]),
-	toList(B, BList),
-	allNotTred(BList), !,
-	transformTransitive(T, L2).
-transformTransitive([H|T], L2) :-
-	findRules(H, [rule(R,B)|T2]),
-	toList(B, BList),
-	\+ allNotTred(BList),
-	writeTable(H),
-	generateTauAposts([rule(R,B)|T2]),
-	generateTauPlus(H),
-	retract(untrans(H)),
-	transformTransitive(T, L2).
-	
-allNotTred([]) :- !.
-allNotTred([true]) :- !.
-allNotTred([not H|T]) :- !,
-	(untrans(H); fact(H)),
-	allNotTred(T).
-allNotTred([H|T]) :-
-	(untrans(H); fact(H)),
-	allNotTred(T).
-	
-transformRest :-
-	retract(untrans(H)),
-	findRules(H, R),
-	writeRules(R),
-	generatePosFact(H),
-	transformRest.
-transformRest.
-
-transWithAbd(H, R) :-
-	containAbd(R), !,
-	writeTable(H),
-	generateTauAposts(R),
-	generateTauPlus(H).
-transWithAbd(H, _) :-
-	assertUntrans(H).
-
-containAbd([rule(_,B)|_]) :-
-	toList(B, BList),
-	splitAr(BList, _, Ar),
-	Ar \= [], !.
-containAbd([rule(_,B)|RR]) :-
-	toList(B, BList),
-	splitAr(BList, _, Ar),
-	Ar == [],
-	containAbd(RR).
-	
 % ---- T` Transformation ---- %
 
-generateTauAposts([], _) :- !.
-generateTauAposts([R|RR], F) :-
-	generateTauApost(R,F),
-	generateTauAposts(RR, F).
-
-generateTauApost(rule(false, _),_) :- !.
-generateTauApost(rule(H, B),F) :- !,
-	toList(B, BList),
-	splitAr(BList, Br, Ar),
-	toConj(Br, BrConj),
-	createApostBody(BrConj, ResBr, Ar, O),
-	createApostHead(H, HRes, O),
-	writeRule(HRes, ResBr, F),
-	nl.
-	
 generateTauAposts([]) :- !.
 generateTauAposts([R|RR]) :-
 	generateTauApost(R),
 	generateTauAposts(RR).
 
 generateTauApost(rule(false, _)) :- !.
-generateTauApost(rule(H, B)) :- !,
+generateTauApost(rule(H, B)) :- 
+	mode(table), !,
 	toList(B, BList),
 	splitAr(BList, Br, Ar),
-	% splitAbd(Ar, Ar2),							% for spliter
 	toConj(Br, BrConj),
-	createApostBody(BrConj, ResBr, Ar, O),		% Ar2 for spliter
+	createApostBody(BrConj, ResBr, Ar, O),
+	createApostHead(H, HRes, O),
+	writeRule(HRes, ResBr),
+	nl.
+generateTauApost(rule(H, B)) :- 
+	mode(split), !,
+	toList(B, BList),
+	splitAr(BList, Br, Ar),
+	splitAbd(Ar, Ar2),
+	toConj(Br, BrConj),
+	createApostBody(BrConj, ResBr, Ar2, O),
 	createApostHead(H, HRes, O),
 	writeRule(HRes, ResBr),
 	nl.
@@ -225,10 +165,16 @@ splitAr([B|BB],[B|Br], Ar) :-
 splitAbd(Abd, [Pos, Neg]) :-
 	splitAbd(Abd, Pos, Neg).
 splitAbd([],[],[]) :- !.
-splitAbd([not R|T],L1,[not R|T2]) :- !,
+splitAbd([not R|T],L1,L2) :- !,
+	insert(not R, T2, L2),
 	splitAbd(T, L1, T2).
-splitAbd([R|T],[R|T1],L2) :- !,
+splitAbd([R|T],L1,L2) :- !,
+	insert(R, T1, L1),
 	splitAbd(T, T1, L2).
+% splitAbd([not R|T],L1,[not R|T2]) :- !,
+%	splitAbd(T, L1, T2).
+% splitAbd([R|T],[R|T1],L2) :- !,
+%	splitAbd(T, T1, L2).
 
 createApostHead(H, ProH, O) :- !,
 	H =.. [S|A],
@@ -258,9 +204,7 @@ generateTauPlus(H) :- !,
 	functor(H,F,Arity),
 	generateVarList(Arity,L),
 	generatePlusHead(F, L, I, O, HHead),
-	generatePlusBody(F, L, I, O, HBody),
-	% generatePlusBody2(F, L, HBody2, HHead),	% uncomment for 1
-	% writeRule(HHead, HBody2),					% uncomment for 1
+	generatePlusBody(F, L, I, O, HBody),1
 	writeRule(HHead, HBody).
 	
 generatePlusHead(F, L, I, O, HRes) :- !,
@@ -371,15 +315,6 @@ generateTauStarBody([], CurB, I, O, ResB) :- !,
 	append(Arg, [I, O], Arg2),
 	concat_atom(['not_', F], F2),
 	ResB =.. [F2|Arg2].
-	
-generateTauStar2(_, _, _, _, rule(_, true), _) :- !.
-generateTauStar2(Fun, Var, I, O, rule(R, _), N) :- !,
-	R =.. [F|_],
-	append(Var, [I, O], Arg),
-	H =.. [Fun|Arg],
-	New =.. [F|Var],
-	Body =.. [dual|[N,New,I,O]],
-	writeRule(H, Body).
 
 % ---- End of T* Transformation ---- %
 
@@ -470,17 +405,27 @@ generateDualNoIC :-
 % ---- Query Transformation ---- %
 
 transformQuery(Q, I, O) :-
+	mode(table), !,
 	createApostBody(Q, ProQ, I, T),
-	NF =.. ['not_false'|[T,O1]], 			% O1 for spliter
+	NF =.. ['not_false'|[T,O]],
+	% write(ProQ), write(NF).
+	ProQ, NF.
+transformQuery(Q, I, O) :-
+	mode(split), !,
+	createApostBody(Q, ProQ, I, T),
+	NF =.. ['not_false'|[T,O1]],
 	% write(ProQ), write(NF).
 	ProQ, NF, 
-	appendResult(O1,O).					% uncomment for spliter
+	appendResult(O1,O).
 	
 % ---- End of Query Transformation ---- %
 
 % ---- Querying abductive program ---- %
 
-query(Q, O) :- query(Q, [[],[]], O).				% [[],[]] for spliter
+query(Q, O) :- 
+	mode(table), !, query(Q, [], O).
+query(Q, O) :- 
+	mode(split), !, query(Q, [[],[]], O).
 query(Q, I, O) :-
 	transformQuery(Q, I, O).
 

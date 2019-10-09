@@ -33,23 +33,12 @@ assertDefined(H) :-
 assertDefined(H) :-
 	unground(H, H2),
 	assert(defined(H2)).
-	
-assertUntrans(H) :-
-	untrans(H), !.
-assertUntrans(H) :-
-	unground(H, H2),
-	assert(untrans(H2)).
 
 assertFact(H) :-
 	fact(H), !.
 assertFact(H) :-
 	unground(H, H2),
 	assert(fact(H2)).
-
-checkTransformed(H) :-
-	isTransformed(H).
-assertTransformed(H) :-
-	assert(isTransformed(H)).
 	
 assertBody((B1, B2)) :- !,
 	assertIsPred(B1),
@@ -82,13 +71,6 @@ findRules(H, R) :-
 	
 findRules(H, R, N) :-
 	findall(rule(H, B), clause(rule(H, B, N), true), R).
-	
-getTwoLastList([],[]) :- !.
-getTwoLastList([L],[L]) :- !.
-getTwoLastList([L1, L2],[L1, L2]) :- !.
-getTwoLastList([_|[L1,L2]], [L1,L2]) :- !.
-getTwoLastList([_|L1], L2) :- 
-	getTwoLastList(L1, L2).
 	
 generateVarList(0,[]).
 generateVarList(N1,[_|L]) :-
@@ -124,17 +106,6 @@ writeRule(Head, true) :- !,
 writeRule(Head, Body) :-
 	write(Head), write(' :- '), write(Body), write('.'), nl.
 
-writeRule(Head, true, F) :- !,
-	write(F, Head), write(F, '.'), nl(F).
-writeRule(Head, Body, F) :-
-	write(F, Head), write(F, ' :- '), write(F, Body), write(F, '.'), nl(F).
-	
-writeTable(H, F) :-
-	functor(H, Fun, Arity),
-	A2 is Arity + 1,
-	concat_atom([Fun,'_ab'],Pred),
-	write(F, ':- table '), write(F, Pred), write(F, '/'), write(F, A2), write(F, '.'), nl(F).
-
 writeTable(H) :-
 	functor(H, Fun, Arity),
 	A2 is Arity + 1,
@@ -150,55 +121,68 @@ writeSecDual1(Head, Var1, Var2) :-
 negate((not L),L) :- !.
 negate(L,(not L)).
 
-% produce_context(I, I, []) :- !.
-% produce_context(E, [], E) :- !.
-% produce_context(O, I, [E|EE]) :-
-%	member(E, I), !,
-%	produce_context(O, I, EE).
-% produce_context(O, I, [E|EE]) :-
-%	negate(E, NE),
-%	\+ member(NE, I),
-%	append(I, [E], IE),
-%	produce_context(O, IE, EE).
+produce_context(I, I, []) :- mode(table), !.
+produce_context(E, [], E) :- mode(table), !.
+produce_context(O, I, [E|EE]) :-
+	mode(table), 
+	member(E, I), !,
+	produce_context(O, I, EE).
+produce_context(O, I, [E|EE]) :-
+	mode(table), !,
+	negate(E, NE),
+	\+ member(NE, I),
+	append(I, [E], IE),
+	produce_context(O, IE, EE).
 
-produce_context(I, I, [[],[]]) :- !.
-produce_context(E, [[],[]], E) :- !.
+produce_context(I, I, [[],[]]) :- mode(split), !.
+produce_context(E, [[],[]], E) :- mode(split), !.
 produce_context(O, [Pi,Ni], [[E|EE],L]) :-
+	mode(split), 
 	member(E, Pi), !,
 	produce_context(O, [Pi,Ni], [EE,L]).
 produce_context(O, [Pi,Ni], [[E|EE],L]) :-
+	mode(split), !,
 	negate(E, NE),
 	\+ member(NE, Ni),
-	append(Ni, [E], NiE),
+	insert(E, Ni, NiE),
+	% append(Ni, [E], NiE),
 	produce_context(O, [Pi,NiE], [EE,L]).
 produce_context(O, [Pi,Ni], [L,[E|EE]]) :-
+	mode(split), 
 	member(E, Ni), !,
 	produce_context(O, [Pi,Ni], [L,EE]).
 produce_context(O, [Pi,Ni], [L,[E|EE]]) :-
+	mode(split), !,
 	negate(E, NE),
 	\+ member(NE, Pi),
-	append(Pi, [E], PiE),
+	insert(E, Pi, PiE),
+	% append(Pi, [E], PiE),
 	produce_context(O, [PiE,Ni], [L,EE]).
 
-% insert_abducible(A, I, I) :-
-% 	member(A, I), !.
-%insert_abducible(A, I, O) :-
-%	negate(A, NA),
-%	\+ member(NA, I),
-%	append(I, [A], O).
+insert_abducible(A, I, I) :-
+	mode(table), member(A, I), !.
+insert_abducible(A, I, O) :-
+	mode(table), 
+	negate(A, NA),
+	\+ member(NA, I),
+	append(I, [A], O).
 
 insert_abducible(not A, [Pos, Neg], [Pos, Neg]) :-
-	member(not A, Neg), !.
+	mode(split), member(not A, Neg), !.
 insert_abducible(not A, [Pos, Neg], [Pos, O]) :-
+	mode(split), 
 	negate(not A, NA),
 	\+ member(NA, Pos), !,
-	append(Neg, [not A], O).
+	insert(not A, Neg, O).
+	% append(Neg, [not A], O).
 insert_abducible(A, [Pos, Neg], [Pos, Neg]) :-
-	member(A, Pos), !.
+	mode(split), member(A, Pos), !.
 insert_abducible(A, [Pos, Neg], [O, Neg]) :-
+	mode(split), 
 	negate(A, NA),
 	\+ member(NA, Neg),
-	append(Pos, [A], O).
+	insert(A, Pos, O).
+	% append(Pos, [A], O).
 
 notVar([X|_],H) :-
 	memberVar(X, H), !.
@@ -235,6 +219,14 @@ appendContext([P,_], R, O) :-
 
 appendResult([P,N], O) :-
 	append(P, N, O).
+
+% insert into sorted list.
+
+insert(X, [], [X]).
+insert(X, [Y|Rest], [X,Y|Rest]) :-
+    X @< Y, !.
+insert(X, [Y|Rest0], [Y|Rest]) :-
+    insert(X, Rest0, Rest).
 
 writeList([]).
 writeList([H|T]) :-
