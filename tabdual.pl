@@ -166,11 +166,11 @@ splitAbd(Abd, [Pos, Neg]) :-
 	splitAbd(Abd, Pos, Neg).
 splitAbd([],[],[]) :- !.
 splitAbd([not R|T],L1,L2) :- !,
-	insert(not R, T2, L2),
-	splitAbd(T, L1, T2).
+	splitAbd(T, L1, T2),
+	insert(not R, T2, L2).
 splitAbd([R|T],L1,L2) :- !,
-	insert(R, T1, L1),
-	splitAbd(T, T1, L2).
+	splitAbd(T, T1, L2),
+	insert(R, T1, L1).
 % splitAbd([not R|T],L1,[not R|T2]) :- !,
 %	splitAbd(T, L1, T2).
 % splitAbd([R|T],[R|T1],L2) :- !,
@@ -204,7 +204,7 @@ generateTauPlus(H) :- !,
 	functor(H,F,Arity),
 	generateVarList(Arity,L),
 	generatePlusHead(F, L, I, O, HHead),
-	generatePlusBody(F, L, I, O, HBody),1
+	generatePlusBody(F, L, I, O, HBody),
 	writeRule(HHead, HBody).
 	
 generatePlusHead(F, L, I, O, HRes) :- !,

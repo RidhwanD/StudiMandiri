@@ -106,6 +106,7 @@ writeRule(Head, true) :- !,
 writeRule(Head, Body) :-
 	write(Head), write(' :- '), write(Body), write('.'), nl.
 
+writeTable(false) :- !.
 writeTable(H) :-
 	functor(H, Fun, Arity),
 	A2 is Arity + 1,
@@ -144,9 +145,9 @@ produce_context(O, [Pi,Ni], [[E|EE],L]) :-
 	mode(split), !,
 	negate(E, NE),
 	\+ member(NE, Ni),
-	insert(E, Ni, NiE),
+	insert(E, Pi, PiE),
 	% append(Ni, [E], NiE),
-	produce_context(O, [Pi,NiE], [EE,L]).
+	produce_context(O, [PiE,Ni], [EE,L]).
 produce_context(O, [Pi,Ni], [L,[E|EE]]) :-
 	mode(split), 
 	member(E, Ni), !,
@@ -155,14 +156,14 @@ produce_context(O, [Pi,Ni], [L,[E|EE]]) :-
 	mode(split), !,
 	negate(E, NE),
 	\+ member(NE, Pi),
-	insert(E, Pi, PiE),
+	insert(E, Ni, NiE),
 	% append(Pi, [E], PiE),
-	produce_context(O, [PiE,Ni], [L,EE]).
+	produce_context(O, [Pi,NiE], [L,EE]).
 
 insert_abducible(A, I, I) :-
 	mode(table), member(A, I), !.
 insert_abducible(A, I, O) :-
-	mode(table), 
+	mode(table), !,
 	negate(A, NA),
 	\+ member(NA, I),
 	append(I, [A], O).
@@ -170,19 +171,17 @@ insert_abducible(A, I, O) :-
 insert_abducible(not A, [Pos, Neg], [Pos, Neg]) :-
 	mode(split), member(not A, Neg), !.
 insert_abducible(not A, [Pos, Neg], [Pos, O]) :-
-	mode(split), 
+	mode(split), !,
 	negate(not A, NA),
-	\+ member(NA, Pos), !,
+	\+ member(NA, Pos),
 	insert(not A, Neg, O).
-	% append(Neg, [not A], O).
 insert_abducible(A, [Pos, Neg], [Pos, Neg]) :-
 	mode(split), member(A, Pos), !.
 insert_abducible(A, [Pos, Neg], [O, Neg]) :-
-	mode(split), 
+	mode(split), !,
 	negate(A, NA),
 	\+ member(NA, Neg),
 	insert(A, Pos, O).
-	% append(Pos, [A], O).
 
 notVar([X|_],H) :-
 	memberVar(X, H), !.
@@ -232,3 +231,21 @@ writeList([]).
 writeList([H|T]) :-
 	write(H), write(','),
 	writeList(T).
+
+relevantGroundTerm([],[],[]) :- !.
+relevantGroundTerm([H|T],G,NG) :-
+	H =.. [_|Arg],
+	inputGround(Arg,L1,L),
+	relevantGroundTerm(T,L2,L3),
+	append(L1,L2,L4),
+	append(L,L3,L5),
+	sort(L4,G), sort(L5,NG).
+	
+inputGround([],[],[]) :- !.
+inputGround([H|T],[H|T2],L) :-
+	ground(H), !,
+	inputGround(T,T2,L).
+inputGround([H|T],L2,[H|T3]) :-
+	\+ ground(H), !,
+	inputGround(T,L2,T3).
+	

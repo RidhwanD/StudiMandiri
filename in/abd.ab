@@ -1,10 +1,14 @@
 abds([q/2, r/2, t/2, b/1, m/1, n/1, g/1]).
 
+beginProlog.
+x(1).
+endProlog.
+
 p(X) <- q(X,Y), a(Y).
 s(X,Y) <- a(Y), t(Y,X).
 a(X) <- b(X), i(X).
 
-k(X) <- not l(X), m(X).
+k(X) <- not x(X), m(X).
 k(X) <- b(X).
 l(X) <- n(X).
 
