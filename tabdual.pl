@@ -24,16 +24,16 @@ mode :-
 	mode(Mode),
 	write_ln(['Current mode: ', Mode]).
 
-% Beralih ke mode tabling
-switch_mode(t) :- !,
+% Switch to normal table mode
+switchMode(t) :- !,
 	retractall(mode(_)),
 	assert(mode(table)).
-% Beralih ke mode answer subsumption
-switch_mode(sp) :- !,
+% Switch to split solution mode
+switchMode(sp) :- !,
 	retractall(mode(_)),
 	assert(mode(split)).
-% Jika user salah input mode
-switch_mode(Mode) :-
+% Invalid mode input
+switchMode(Mode) :-
 	write_ln(['Unknown mode: ', Mode, '. Only t (\'tabling\') and sp (\'split\') are available.']),
 	fail.
 	
