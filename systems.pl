@@ -116,7 +116,17 @@ writeTable(H) :-
 writeSecDual1(_, [], []) :- !.
 writeSecDual1(Head, Var1, Var2) :-
 	write(Head), write(' :- '), write(Var1), write('\\='), write(Var2), write('.'), nl.
-	
+
+% ---- Writing all solutions generated ---- %
+writeSolution([], _) :- !, fail.
+writeSolution([S|Sol], Num) :-
+	writeSolution([S|Sol], Num).
+writeSolution([], _).
+writeSolution([S|Sol], Num) :-
+	write_ln(['(', Num, ') ', S]),
+	NextNum is Num + 1,
+	writeSolution(Sol, NextNum).
+
 % System Predicates
 
 negate((not L),L) :- !.
@@ -192,7 +202,9 @@ notVar(X, H) :-
 	X \= [],
 	X =.. [_|L],
 	notVar(L, H), !.
-	
+
+memberVar(X,[H,_]) :-
+	X == H, !.
 memberVar(X, H) :-
 	\+ var(X), !, notVar(X, H).
 memberVar(X, [H|_]) :- 
@@ -200,8 +212,15 @@ memberVar(X, [H|_]) :-
 	X == H, !.
 memberVar(X, [H|T]) :-
 	var(H),
-	\+ X == H,
+	\+ X == H, !,
 	memberVar(X, T).
+memberVar(X, [H|_]) :-
+	\+ var(H), H =.. [_|L],
+	memberVar(X,L), !.
+memberVar(X, [H|T]) :-
+	\+ var(H), H =.. [_|L],
+	\+ memberVar(X,L), !,
+	memberVar(X,T).
 	
 subtituteArg([],[],_,[]) :- !.
 subtituteArg([_|T1],[H2|T2],Var,[H2|T3]) :-

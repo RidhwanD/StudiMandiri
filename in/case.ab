@@ -1,0 +1,96 @@
+recommendation(beta_blockers, class_1) <- 
+	evidence(accf_stage_b), history_of_mi_or_acs, measurement(lvef, Data),
+	reduced_ef(Data), not contraindication(beta_blockers).
+	
+recommendation(digoxin, class_2a) <- 
+	not contraindication(digoxin), evidence(accf_stage_c), diagnosis(hf_with_reduced_ef).
+contraindication(digoxin) <- evidence(atrioventricular_block).
+
+recommendation(blood_pressure_control, class_1) <-
+	evidence(accf_stage_b), diagnosis(structural_cardiac_abnormalities),
+	not contraindication(blood_pressure_control).
+contraindication(blood_pressure_control) <- history(mi).
+contraindication(blood_pressure_control) <- history(acs).
+
+contraindication(anticoagulation) <-
+	not cardioembolic_source, not diagnosis(af), 
+	not history(thromboembolism), diagnosis(hf_with_reduced_ef).
+	
+recommendation(ace_inhibitors, class_1) <-
+	not contraindication(ace_inhibitors), evidence(accf_stage_c), diagnosis(hf_with_reduced_ef).
+recommendation(arbs, class_1) <- 
+	contraindication(ace_inhibitors), not contraindication(arbs),
+	not taboo_choice(arbs), evidence(accf_stage_c), diagnosis(hf_with_reduced_ef).
+	
+recommendation(ace_inhibitors, class_1) <- 
+	evidence(accf_stage_c), not skip_concomitant_choice(ace_inhibitors),
+	not contraindication(ace_inhibitors), diagnosis(hf_with_reduced_ef).
+skip_concomitant_treatment(ace_inhibitors) <-
+	diagnosis(hf_with_reduced_ef), not recommendation(diuretics, class_1),
+	not contraindication(diuretics).
+recommendation(diuretics, class_1) <-
+	diagnosis(hf_with_reduced_ef), not contraindication(diuretics),
+	recommendation(ace_inhibitors, class_1).
+	
+recommendation(beta_blockers, class_1) <-
+	not skip_concomitant_choice(beta_blockers),
+	not absent_indispensable_choice(beta_blockers),
+	not contraindication(beta_blockers), evidence(accf_stage_c), diagnosis(hf_with_reduced_ef).
+absent_indispensable_choice(beta_blockers) <-
+	not recommendation(diuretics, class_1), diagnosis(hf_with_reduced_ef),
+	evidence(accf_stage_c), current_or_recent_history_of_fluid_retention.
+recommendation(diuretics, class_1) <-
+	recommendation(beta_blockers, class_1),
+	not contraindication(diuretics), evidence(accf_stage_c), diagnosis(hf_with_reduced_ef),
+	current_or_recent_history_of_fluid_retention.
+	
+taboo_choice(ace_inhibitors) <- 
+	diagnosis(hf_with_reduced_ef), recommendation(arbs, class_1),
+	recommendation(aldosterone_antagonist, class_1).
+taboo_choice(arbs) <- 
+	diagnosis(hf_with_reduced_ef), recommendation(ace_inhibitors, class_1),
+	recommendation(aldosterone_antagonist, class_1).
+taboo_choice(aldosterone_antagonist) <-
+	diagnosis(hf_with_reduced_ef), recommendation(arbs, class_1), 
+	recommendation(ace_inhibitors, class_1).
+recommendation(ace_inhibitors, class_1) <-
+	evidence(accf_stage_c), diagnosis(hf_with_reduced_ef), not skip_concomitant_choice(ace_inhibitors),
+	not taboo_choice(ace_inhibitors), not contraindication(ace_inhibitors).
+recommendation(arbs, class_1) <- 
+	contraindication(ace_inhibitors), not contraindication(arbs), 
+	not taboo_choice(arbs), evidence(accf_stage_c), diagnosis(hf_with_reduced_ef).
+recommendation(aldosterone_antagonist, class_1) <-
+	conditions_for_aldosterone_antagonist_class_1,
+	not skip_concomitant_choice(aldosterone_antagonist),
+	not contraindication(aldosterone_antagonist),
+	not taboo_choice(aldosterone_antagonist).
+	
+%doctor’s assessments
+evidence(accf_stage_c).
+evidence(nyha_class_3).
+expectation_of_survival(3).
+
+%demographics of the patient
+evidence(female).
+evidence(age, 60).
+
+%measurements from the lab
+measurement(creatinine, 1.8).
+measurement(potassium, 4.9).
+measurement(lvef, 0.35).
+measurement(lbbb, 180).
+measurement(sinus_rhythm).
+
+%history of the patient
+diagnosis(hf_with_reduced_ef).
+diagnosis(myocardial_ischemia).
+diagnosis(atrial_fibrillation).
+diagnosis(coronary_artery_disease).
+diagnosis(hypertension).
+evidence(ischemic_etiology_of_hf).
+evidence(sleep_apnea).
+evidence(fluid_retention).
+history(mi, recent).
+history(stroke).
+history(cardiovascular_hospitalization).
+post_mi(40).

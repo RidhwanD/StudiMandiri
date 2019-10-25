@@ -115,8 +115,8 @@ transformRule :-
 	retract(defined(H)),
 	removeIsPred(H),
 	findRules(H, R),
-	writeTable(H),
 	generateTauAposts(R),
+	writeTable(H),
 	generateTauPlus(H),
 	generateDualRules(H, R),
 	nl,
@@ -296,11 +296,11 @@ generateTauStar(Head, Var, R, RBody, I, O, PrevB) :- !,
 	generateTauStarBody(PrevB, RBody, I, O, Body),
 	writeRule(Head2,Body).
 
-generateTauStarBody([not PrevB|RPrevB], CurB, I, O, (not PrevBn, ResB)) :- !,
-	PrevB =.. [F|Arg],
-	append(Arg, [I, I1], Arg2),
-	PrevBn =.. [F|Arg2],
-	generateTauStarBody(RPrevB, CurB, I1, O, ResB).
+generateTauStarBody([not _|RPrevB], CurB, I, O, (ResB)) :- !,
+	% PrevB =.. [F|Arg],
+	% append(Arg, [I, I1], Arg2),
+	% PrevBn =.. [F|Arg2],
+	generateTauStarBody(RPrevB, CurB, I, O, ResB).
 generateTauStarBody([PrevB|RPrevB], CurB, I, O, (PrevBn, ResB)) :- !,
 	PrevB =.. [F|Arg],
 	append(Arg, [I, I1], Arg2),
@@ -428,6 +428,10 @@ query(Q, O) :-
 	mode(split), !, query(Q, [[],[]], O).
 query(Q, I, O) :-
 	transformQuery(Q, I, O).
+	
+ask(Q) :- 
+	findall(O, query(Q,O), Sol).
+	% writeSolution(Sol,1).
 
 % Delete previously defined abducible
 

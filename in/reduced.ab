@@ -1,0 +1,34 @@
+beginProlog.
+% experiment specific
+exists(phase0,drug).
+possible_drug_effect(_Drug,inhibit,_GeneX).
+possible_drug_effect(_Drug,induce,_GeneX).
+absent(calpain).
+reaction(rct(aif,apoptosis)).
+inhibitor(aif,bcl_xl).
+endProlog.
+
+abds([drug_induced/3, drug_inhibited/3]).
+
+active( Phase, GeneX ) <-
+	not inhibited(Phase,GeneX),
+	normally_active(Phase,GeneX).
+	
+normally_active(Phase,GeneX) <-
+	reaction(rct(GeneY,GeneX)),
+	active(Phase,GeneY).
+
+inhibited(Phase,GeneX) <-
+	normally_inhibited(Phase,GeneX).
+
+inhibited(Phase,GeneX) <-
+	externally_inhibited(Phase,GeneX).
+	
+normally_inhibited(Phase,GeneX) <-
+	inhibitor(GeneX,GeneZ),
+	active(Phase,GeneZ).
+
+externally_inhibited(Phase,GeneX) <-
+	exists(Phase,Drug),
+	possible_drug_effect(Drug,inhibit,GeneX),
+	drug_inhibited(Phase,Drug,GeneX).

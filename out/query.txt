@@ -1,0 +1,8 @@
+active(phase0, aif),
+active(phase0, endo_g),
+inactive(phase0, caspase9),
+inactive(phase0, caspase6),
+inactive(phase0, bcl2),
+inactive(phase0, caspase7),
+inactive(phase0, akt),
+inactive(phase0, xiap).

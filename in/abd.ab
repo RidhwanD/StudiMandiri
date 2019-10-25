@@ -1,4 +1,4 @@
-abds([q/2, r/2, t/2, b/1, m/1, n/1, g/1]).
+abds([q/2, r/2, t/2, b/1, m/1, n/1, g/1, a1/2]).
 
 beginProlog.
 x(1).
@@ -17,3 +17,5 @@ h(X) <- i(X), g(X).
 h(X) <- j(X).
 j(X) <- g(X), not m(X).
 
+p1(1).
+p1(X) <- a1(X,Y), p1(Y).
