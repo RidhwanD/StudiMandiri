@@ -1,4 +1,4 @@
-:- dynamic defined/1, rule/2, fact/1, isPred/1, abds/1.
+:- dynamic defined/1, rule/2, rule/3, fact/1, isPred/1, abds/1.
 
 useFiles :-
 	consult('SMGit/StudiMandiri/systems.pl').
@@ -10,6 +10,7 @@ useFiles :-
 clear :-
 	retractall(defined(_)),
 	retractall(rule(_, _)),
+	retractall(rule(_, _, _)),
 	retractall(fact(_)), 
 	retractall(isTransformed(_)),
 	retractall(untrans(_)),
@@ -28,6 +29,10 @@ mode :-
 switchMode(t) :- !,
 	retractall(mode(_)),
 	assert(mode(table)).
+% Switch to dual by need mode
+switchMode(n) :- !,
+	retractall(mode(_)),
+	assert(mode(dneed)).
 % Switch to split solution mode
 switchMode(sp) :- !,
 	retractall(mode(_)),
@@ -47,6 +52,10 @@ tellFileOutput(F) :-
 	concat_atom(['SMGit/StudiMandiri/out/', F, '_s.pl'], FAb),
 	tell(FAb).
 tellFileOutput(F) :-
+	mode(dneed), !,
+	concat_atom(['SMGit/StudiMandiri/out/', F, '_n.pl'], FAb),
+	tell(FAb).
+tellFileOutput(F) :-
 	mode(table), !,
 	concat_atom(['SMGit/StudiMandiri/out/', F, '.pl'], FAb),
 	tell(FAb).
@@ -56,10 +65,30 @@ load(F) :-
 	concat_atom(['SMGit/StudiMandiri/out/', F, '_s.pl'], FOut),
 	consult(FOut).	
 load(F) :-
+	mode(dneed), !,
+	concat_atom(['SMGit/StudiMandiri/out/', F, '_n.pl'], FOut),
+	consult(FOut).	
+load(F) :-
 	mode(table), !,
 	concat_atom(['SMGit/StudiMandiri/out/', F, '.pl'], FOut),
 	consult(FOut).	
-	
+
+% Menambahkan indeks ke rule/2
+add_indices :-
+	retract(defined(H)),
+	findRules(H, R),
+	add_indices_to_rule(R, 1),
+	add_indices,
+	assert(defined(H)).
+add_indices.
+
+add_indices_to_rule([], _).
+add_indices_to_rule([rule(H,B)|RR], N) :-
+	retract(rule(H,B)),
+	assert(rule(H,B,N)),
+	NN is N + 1,
+	add_indices_to_rule(RR, NN).
+
 % Transforming the abductive program
 transform(Filename) :-
 	seeFileInput(Filename),
@@ -72,7 +101,7 @@ transform(Filename) :-
 readProgramInput :-
 	clear,
 	readRules.
-	% add_indices.
+	add_indices.
 
 readRules :-
 	read(C),
@@ -136,7 +165,7 @@ generateTauAposts([R|RR]) :-
 
 generateTauApost(rule(false, _)) :- !.
 generateTauApost(rule(H, B)) :- 
-	mode(table), !,
+	(mode(table); mode(dneed)), !,
 	toList(B, BList),
 	splitAr(BList, Br, Ar),
 	toConj(Br, BrConj),
@@ -279,6 +308,14 @@ generateTauMinBody(Fun, Var, [rule(R, B)|L], (Copy, BRes, BBRes), I, O, Num, Num
 % ---- T* Transformation ---- %
 
 generateTauStar(_, _, _, true, _, _, _) :- !.	
+generateTauStar(Head, Var, _, _, I, O, _) :-
+	mode(dneed), !,
+	append(Var, [I, O], Arg),
+	Head2 =.. [Head|Arg],
+	sub_atom(Head,_,1,0,Num),
+	HBody =.. [Head|Var],
+	Body =.. [dual,Num,HBody,I,O],
+	writeRule(Head2,Body).
 generateTauStar(Head, Var, R, (RBody, RRBody), I, O, PrevB) :- !,
 	RBody =.. [_|A1],
 	subtituteArg(Var,R,A1,Var2),
@@ -295,7 +332,7 @@ generateTauStar(Head, Var, R, RBody, I, O, PrevB) :- !,
 	Head2 =.. [Head|Arg],
 	generateTauStarBody(PrevB, RBody, I, O, Body),
 	writeRule(Head2,Body).
-
+	
 generateTauStarBody([not _|RPrevB], CurB, I, O, (ResB)) :- !,
 	% PrevB =.. [F|Arg],
 	% append(Arg, [I, I1], Arg2),
@@ -405,7 +442,7 @@ generateDualNoIC :-
 % ---- Query Transformation ---- %
 
 transformQuery(Q, I, O) :-
-	mode(table), !,
+	(mode(table); mode(dneed)), !,
 	createApostBody(Q, ProQ, I, T),
 	NF =.. ['not_false'|[T,O]],
 	% write(ProQ), write(NF).
@@ -423,15 +460,16 @@ transformQuery(Q, I, O) :-
 % ---- Querying abductive program ---- %
 
 query(Q, O) :- 
-	mode(table), !, query(Q, [], O).
+	(mode(table); mode(dneed)), !, query(Q, [], O).
 query(Q, O) :- 
 	mode(split), !, query(Q, [[],[]], O).
 query(Q, I, O) :-
 	transformQuery(Q, I, O).
 	
 ask(Q) :- 
-	findall(O, query(Q,O), Sol).
-	% writeSolution(Sol,1).
+	findall(O, query(Q,O), Sol),
+	writeSolution(Sol,1).
+	% length(Sol,Len), write(Len).
 
 % Delete previously defined abducible
 

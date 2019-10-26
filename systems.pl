@@ -1,3 +1,5 @@
+:- set_prolog_stack(trail,  limit(5 000 000 000)).
+
 getAbducibles(A) :-
 	abds(A), !.
 getAbducibles([]).
@@ -72,6 +74,9 @@ findRules(H, R) :-
 findRules(H, R, N) :-
 	findall(rule(H, B), clause(rule(H, B, N), true), R).
 	
+find_nth_rules(H, N, RL) :-
+	clause(rule(H, B, N), true), toList(B, RL).
+	
 generateVarList(0,[]).
 generateVarList(N1,[_|L]) :-
 	N1 > 0, N is N1 - 1,
@@ -132,14 +137,14 @@ writeSolution([S|Sol], Num) :-
 negate((not L),L) :- !.
 negate(L,(not L)).
 
-produce_context(I, I, []) :- mode(table), !.
-produce_context(E, [], E) :- mode(table), !.
+produce_context(I, I, []) :- (mode(table); mode(dneed)), !.
+produce_context(E, [], E) :- (mode(table); mode(dneed)), !.
 produce_context(O, I, [E|EE]) :-
-	mode(table), 
+	(mode(table); mode(dneed)), 
 	member(E, I), !,
 	produce_context(O, I, EE).
 produce_context(O, I, [E|EE]) :-
-	mode(table), !,
+	(mode(table); mode(dneed)), !,
 	negate(E, NE),
 	\+ member(NE, I),
 	append(I, [E], IE),
@@ -171,9 +176,9 @@ produce_context(O, [Pi,Ni], [L,[E|EE]]) :-
 	produce_context(O, [Pi,NiE], [L,EE]).
 
 insert_abducible(A, I, I) :-
-	mode(table), member(A, I), !.
+	(mode(table); mode(dneed)), member(A, I), !.
 insert_abducible(A, I, O) :-
-	mode(table), !,
+	(mode(table); mode(dneed)), !,
 	negate(A, NA),
 	\+ member(NA, I),
 	append(I, [A], O).
@@ -268,3 +273,108 @@ inputGround([H|T],L2,[H|T3]) :-
 	\+ ground(H), !,
 	inputGround(T,L2,T3).
 	
+%%%%%%%%%%%%%%%%%% DUAL BY NEED %%%%%%%%%%%%%%%%%%
+
+% Predikat sistem dual/4
+dual(N, P, I, O) :-
+	trie_property(T, alias(dual)),
+	create_generic(P, GenP),
+	dual(T, N, P, GenP, I, O).
+
+dual(T, N, P, GenP, I, O) :-
+	trie_gen_compiled(d(N, GenP, Dual, _, Positives), T),
+	call_dual(P, GenP, I, O, Dual, Positives).
+dual(T, N, P, GenP, I, O) :-
+	current_pos(T, N, GenP, Pos, Positives),
+	dualize(Pos, Dual, NextPos),
+	store_dual(T, N, GenP, Dual, NextPos, Positives),
+	call_dual(P, GenP, I, O, Dual, Positives).
+
+current_pos(T, N, P, Pos, Positives) :-
+	trie_gen_compiled(d(N, P, _, LastPos, _), T), !,
+	get_last_positions(LastPos, Pos),
+	find_nth_rules(P, N, Rules),
+	get_positives(Rules, Pos, Positives).
+current_pos(_, N, P, Pos, Positives) :-
+	find_nth_rules(P, N, Rules),
+	get_last_positions(Rules, Pos),
+	get_positives(Rules, Pos, Positives).
+
+dualize([Pos|Poss], Dual, Poss) :-
+	dualize(Pos, Dual).
+
+dualize((not P), P) :- !.
+dualize(P, PStar) :-
+	isAbducible(P), !,
+	P =.. [S|A],
+	concat_atom([S, '_star'], NS),
+	PStar =.. [NS|A].
+dualize(P, NotP) :-
+	P =.. [S|A],
+	concat_atom(['not_', S], NS),
+	NotP =.. [NS|A].
+
+store_dual(T, N, P, Dual, Pos, Positives) :-
+	trie_gen(d(N, P, Dual, Pos, Positives), T).
+
+call_dual(P, GenP, I, O, D, Positives) :-
+	instantiate_generic(P, GenP),
+	toConj(Positives, PositConj),
+	build_context(PositConj, ProPositives, I, T),
+	D =.. [Sym|Arg],
+	append(Arg, [T, O], DualArgs),
+	Dual =.. [Sym|DualArgs],
+	ProPositives,
+	Dual.
+	
+% process abductive contexts transition
+build_context(true, true, I, I) :- !.
+build_context((B, BB), (ProB, ProBB), I, O) :- !,
+	build_context_literal(B, ProB, I, IO),
+	build_context(BB, ProBB, IO, O).
+build_context(B, ProB, I, O) :-
+	build_context_literal(B, ProB, I, O).
+
+build_context_literal(true, true, I, I) :- !.
+build_context_literal(L, ProL, I, O) :-
+	build_context_atom(L, ProL, I, O).
+
+build_context_atom(A, ProA, I, O) :-
+	A =.. [S|AR],
+	append(AR, [I,O], NewAR),
+	ProA =.. [S|NewAR].
+
+create_generic(false, false) :- !.
+create_generic(P, GenP) :-
+	functor(P, Sym, Arity),
+	length(NewArgs, Arity),
+	GenP =.. [Sym|NewArgs].
+
+instantiate_generic(false, false) :- !.
+instantiate_generic(P, GenP) :-
+	P =.. [_|ArgP],
+	GenP =.. [_|ArgGenP],
+	instantiate(ArgP, ArgGenP).
+
+instantiate([], []).
+instantiate([P1|PP1], [P2|PP2]) :-
+	P2 = P1,
+	instantiate(PP1, PP2).
+	
+get_last_positions(List, Pos) :-
+	length(List, Len),
+	between(0, Len, N),
+	PosSize is Len - N,
+	sublist(List, N, PosSize, Pos).
+	
+get_positives(Pos, Pos, []) :- !.
+get_positives([(not _)|Rules], Pos, Positives) :- !,
+	get_positives(Rules, Pos, Positives).
+get_positives([R|Rules], Pos, [R|Positives]) :-
+	get_positives(Rules, Pos, Positives).
+	
+sublist(List, Offset, Length, Sublist):-
+  	length(Prefix, Offset),
+  	append(Prefix, Rest, List),
+  	length(Sublist, Length),
+  	append(Sublist, _, Rest).
