@@ -145,7 +145,7 @@ transformRule :-
 	removeIsPred(H),
 	findRules(H, R),
 	generateTauAposts(R),
-	writeTable(H),
+	checkAndWriteTable(H, R),
 	generateTauPlus(H),
 	generateDualRules(H, R),
 	nl,
@@ -157,6 +157,17 @@ removeIsPred(P) :-
 removeIsPred(_).
 
 % ---- T` Transformation ---- %
+
+checkAndWriteTable(H, []).
+checkAndWriteTable(H, [rule(He,B)|RR]) :-
+	toList(B,B1),
+	((checkRules(B1), checkAndWriteTable(H,RR));
+	writeTable(H)).
+	
+checkRules([]).
+checkRules([B|BB]) :-
+	(isAbducible(B); (unground(B,B1), fact(B1))),
+	checkRules(BB).
 
 generateTauAposts([]) :- !.
 generateTauAposts([R|RR]) :-
@@ -468,8 +479,8 @@ query(Q, I, O) :-
 	
 ask(Q) :- 
 	findall(O, query(Q,O), Sol),
-	writeSolution(Sol,1).
-	% length(Sol,Len), write(Len).
+	% writeSolution(Sol,1).
+	length(Sol,Len), write(Len).
 
 % Delete previously defined abducible
 

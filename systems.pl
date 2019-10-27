@@ -1,4 +1,4 @@
-:- set_prolog_stack(trail,  limit(5 000 000 000)).
+% :- set_prolog_stack(trail,  limit(3 000 000 000)).
 
 getAbducibles(A) :-
 	abds(A), !.
