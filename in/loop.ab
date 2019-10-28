@@ -1,13 +1,13 @@
 beginProlog.
-v(a,b).
-x(a,c).
+a(1,2).
+a(2,3).
+a(3,4).
+b(1,4).
+b(2,3).
+b(2,5).
 endProlog.
 
-abds([w/1]).
+abds([e/1]).
 
-r(X) <- not s(X),y(X).
-s(X) <- t(X).
-s(X) <- u(X).
-t(X) <- v(X,Y),r(Y).
-u(X) <- w(X).
-y(X) <- x(Y,X),r(Y).
+c(X) <- a(X,Y), d(Y).
+d(Y) <- b(Y,Z), e(Z).

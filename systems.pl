@@ -1,4 +1,4 @@
-% :- set_prolog_stack(trail,  limit(3 000 000 000)).
+:- set_prolog_stack(trail,  limit(3 000 000 000)).
 
 getAbducibles(A) :-
 	abds(A), !.
@@ -378,3 +378,8 @@ sublist(List, Offset, Length, Sublist):-
   	append(Prefix, Rest, List),
   	length(Sublist, Length),
   	append(Sublist, _, Rest).
+	
+subset([], _).
+subset([L|L1], L2):-
+	member(L, L2),
+	subset(L1, L2).

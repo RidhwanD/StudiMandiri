@@ -84,7 +84,7 @@ add_indices.
 
 add_indices_to_rule([], _).
 add_indices_to_rule([rule(H,B)|RR], N) :-
-	retract(rule(H,B)),
+	% retract(rule(H,B)),
 	assert(rule(H,B,N)),
 	NN is N + 1,
 	add_indices_to_rule(RR, NN).
@@ -100,7 +100,7 @@ transform(Filename) :-
 
 readProgramInput :-
 	clear,
-	readRules.
+	readRules,
 	add_indices.
 
 readRules :-
@@ -158,8 +158,8 @@ removeIsPred(_).
 
 % ---- T` Transformation ---- %
 
-checkAndWriteTable(H, []).
-checkAndWriteTable(H, [rule(He,B)|RR]) :-
+checkAndWriteTable(_, []).
+checkAndWriteTable(H, [rule(_,B)|RR]) :-
 	toList(B,B1),
 	((checkRules(B1), checkAndWriteTable(H,RR));
 	writeTable(H)).
