@@ -1,4 +1,4 @@
-:- dynamic defined/1, rule/2, rule/3, fact/1, isPred/1, abds/1.
+:- dynamic defined/1, rule/2, rule/3, fact/1, isPred/1, abds/1, dtrie/1.
 
 useFiles :-
 	consult('SMGit/StudiMandiri/systems.pl').
@@ -16,7 +16,12 @@ clear :-
 	retractall(untrans(_)),
 	retractall(abds(_)),
 	retractall(isPred(_)),
-	assert(numvars(0)).
+	assert(numvars(0)),
+	dtrie(X),trie_destroy(X),
+	retractall(dtrie(_)),
+	trie_new(T), assert(dtrie(T)).
+clear :-
+	trie_new(T), assert(dtrie(T)).
 
 :- useFiles, retractall(mode(_)), assert(mode(table)), clear.
 
@@ -145,7 +150,8 @@ transformRule :-
 	removeIsPred(H),
 	findRules(H, R),
 	generateTauAposts(R),
-	checkAndWriteTable(H, R),
+	% checkAndWriteTable(H, R),
+	writeTable(H),
 	generateTauPlus(H),
 	generateDualRules(H, R),
 	nl,

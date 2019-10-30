@@ -277,12 +277,13 @@ inputGround([H|T],L2,[H|T3]) :-
 
 % Predikat sistem dual/4
 dual(N, P, I, O) :-
-	trie_property(T, alias(dual)),
+	% trie_property(T, alias(dual)),
+	dtrie(T),
 	create_generic(P, GenP),
 	dual(T, N, P, GenP, I, O).
 
 dual(T, N, P, GenP, I, O) :-
-	trie_gen_compiled(d(N, GenP, Dual, _, Positives), T),
+	trie_gen_compiled(T, d(N, GenP, Dual, _, Positives)),
 	call_dual(P, GenP, I, O, Dual, Positives).
 dual(T, N, P, GenP, I, O) :-
 	current_pos(T, N, GenP, Pos, Positives),
@@ -291,7 +292,7 @@ dual(T, N, P, GenP, I, O) :-
 	call_dual(P, GenP, I, O, Dual, Positives).
 
 current_pos(T, N, P, Pos, Positives) :-
-	trie_gen_compiled(d(N, P, _, LastPos, _), T), !,
+	trie_gen_compiled(T, d(N, P, _, LastPos, _)), !,
 	get_last_positions(LastPos, Pos),
 	find_nth_rules(P, N, Rules),
 	get_positives(Rules, Pos, Positives).
@@ -315,7 +316,7 @@ dualize(P, NotP) :-
 	NotP =.. [NS|A].
 
 store_dual(T, N, P, Dual, Pos, Positives) :-
-	trie_gen(d(N, P, Dual, Pos, Positives), T).
+	trie_gen(T, d(N, P, Dual, Pos, Positives)).
 
 call_dual(P, GenP, I, O, D, Positives) :-
 	instantiate_generic(P, GenP),
