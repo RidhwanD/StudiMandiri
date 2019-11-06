@@ -1,0 +1,12 @@
+beginProlog.
+q(1).
+endProlog.
+
+abds([r/1, s/1, v/1]).
+p(X) <- q(X), r(X).
+p(X) <- q(X), s(X).
+t(X) <- not p(X), s(X).
+u(X) <- not p(X), v(X).
+w(X) <- t(X).
+w(X) <- u(X).
+a(1) <- q(1).

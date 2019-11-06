@@ -1,7 +1,8 @@
-abds([r/1,s/1]).
+abds([p/1, q/1, r/1]).
 
-p(0).
-q(X) <- r(X).
-q(X) <- p(X), s(X).
+a(X) <- not p(X).
+b(X) <- q(X), a(X).
+c(X) <- b(X), a(X).
+c(X) <- r(X), p(X).
 
-<- r(0).
+<- r(1).

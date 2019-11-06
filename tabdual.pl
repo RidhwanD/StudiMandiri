@@ -150,8 +150,8 @@ transformRule :-
 	removeIsPred(H),
 	findRules(H, R),
 	generateTauAposts(R),
-	% checkAndWriteTable(H, R),
-	writeTable(H),
+	checkAndWriteTable(H, R),
+	% writeTable(H),
 	generateTauPlus(H),
 	generateDualRules(H, R),
 	nl,
@@ -217,10 +217,6 @@ splitAbd([not R|T],L1,L2) :- !,
 splitAbd([R|T],L1,L2) :- !,
 	splitAbd(T, T1, L2),
 	insert(R, T1, L1).
-% splitAbd([not R|T],L1,[not R|T2]) :- !,
-%	splitAbd(T, L1, T2).
-% splitAbd([R|T],[R|T1],L2) :- !,
-%	splitAbd(T, T1, L2).
 
 createApostHead(H, ProH, O) :- !,
 	H =.. [S|A],
@@ -263,11 +259,6 @@ generatePlusBody(Fun, L, I, O, HBody) :- !,
 	Context =.. [produce_context|[O, I, E]],
 	HBody = (HRes, Context).
 	
-generatePlusBody2(Fun, L, HBody, HHead):- !,
-	H =.. [Fun|L],
-	HB =.. [transformApost|[H]],
-	HBody = (HB, !, HHead).
-	
 % ---- End of T+ Transformation ---- %
 
 % ---- T- Transformation ---- %
@@ -278,6 +269,8 @@ generateDualRules(H, R) :- !,
 	generateVarList(Arity,L),
 	generateTauMinHead(F, L, I, O, HRes),
 	generateTauMinBody(F, L, R, BRes, I, O, 1, NumRule),
+	% generateTauMinHead(F, L, I, I, Emp),
+	% writeRule(Emp, true),
 	writeRule(HRes, BRes).
 	
 generateTauMinHead(F, L, I, O, HRes) :- !,
@@ -298,8 +291,8 @@ generateTauMinBody(Fun, Var, [rule(R, B)|[]], BRes, I, O, Num, 1) :- !,
 generateTauMinBody(Fun, Var, [rule(R, B)|[]], (Copy, BRes), I, O, Num, _) :- !,
 	concat_atom([Fun, '_star', Num], SStar),
 	length(Var,N), generateVarList(N,L2),
-	append(L2, [I, O], NewAR),
 	Copy =.. [copy_term|[Var, L2]],
+	append(L2, [I, O], NewAR),
 	BRes =.. [SStar| NewAR],
 	R =.. [_|Arg],
 	append(Var, [T, T], EqAR),
@@ -485,6 +478,11 @@ query(Q, I, O) :-
 	
 ask(Q) :- 
 	findall(O, query(Q,O), Sol),
+	% writeSolution(Sol,1).
+	length(Sol,Len), write(Len).
+
+ask2(I) :- 
+	findall(O, active(phase0,aif,I,O), Sol),
 	% writeSolution(Sol,1).
 	length(Sol,Len), write(Len).
 

@@ -171,12 +171,12 @@ endProlog.
 
 abds([drug_induced/3, drug_inhibited/3]).
 
-active( Phase, GeneX ) <-
+active(Phase,GeneX) <-
 	not absent(GeneX),
 	not inhibited(Phase,GeneX),
 	normally_active(Phase,GeneX).
 
-active( Phase, GeneX) <-
+active(Phase,GeneX) <-
 	not absent(GeneX),
 	externally_induced(Phase,GeneX).
 	
@@ -201,7 +201,7 @@ normally_inhibited(Phase,GeneX) <-
 inactive(Phase,GeneX) <- inhibited(Phase,GeneX).
 inactive(Phase,GeneX) <- not active(Phase,GeneX),reaction(rct(GeneY,GeneX)),inactive(Phase,GeneY).
 
-externally_induced( Phase, GeneX ) <-
+externally_induced(Phase,GeneX) <-
 	drug_active(Phase,GeneX).
 
 drug_active(Phase,GeneX) <-

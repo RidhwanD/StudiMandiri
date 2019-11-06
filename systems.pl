@@ -120,6 +120,7 @@ writeTable(H) :-
 
 writeSecDual1(_, [], []) :- !.
 writeSecDual1(Head, Var1, Var2) :-
+	% write(Head), write('.'), nl.
 	write(Head), write(' :- '), write(Var1), write('\\='), write(Var2), write('.'), nl.
 
 % ---- Writing all solutions generated ---- %
@@ -384,3 +385,9 @@ subset([], _).
 subset([L|L1], L2):-
 	member(L, L2),
 	subset(L1, L2).
+	
+genSubset([], []).
+genSubset([E|Tail], [E|NTail]):-
+  genSubset(Tail, NTail).
+genSubset([_|Tail], NTail):-
+  genSubset(Tail, NTail).

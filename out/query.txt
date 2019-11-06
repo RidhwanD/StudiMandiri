@@ -1,1 +1,22 @@
 active(phase0, aif),active(phase0, endo_g),inactive(phase0, caspase9),inactive(phase0, caspase6),inactive(phase0, bcl2),inactive(phase0, caspase7),inactive(phase0, akt),inactive(phase0, xiap).
+
+
+beginProlog.
+q(1).
+endProlog.
+
+abds([r/1, s/1, v/1]).
+p(X) <- q(X), r(X).
+p(X) <- q(X), s(X).
+t(X) <- not p(X), s(X).
+u(X) <- not p(X), v(X).
+w(X) <- t(X).
+w(X) <- u(X).
+
+
+
+% splitAbd([not R|T],L1,[not R|T2]) :- !,
+%	splitAbd(T, L1, T2).
+% splitAbd([R|T],[R|T1],L2) :- !,
+%	splitAbd(T, T1, L2).
+
