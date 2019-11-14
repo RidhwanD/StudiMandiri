@@ -6,6 +6,7 @@ useFiles :-
 :- op(950, fy, not).
 :- op(1110, fy, '<-').
 :- op(1110, xfy, '<-').
+:- op(1120, xfx, '<>').
 
 clear :-
 	retractall(defined(_)),
@@ -150,8 +151,8 @@ transformRule :-
 	removeIsPred(H),
 	findRules(H, R),
 	generateTauAposts(R),
-	checkAndWriteTable(H, R),
-	% writeTable(H),
+	% checkAndWriteTable(H, R),
+	writeTable(H),
 	generateTauPlus(H),
 	generateDualRules(H, R),
 	nl,
@@ -208,14 +209,14 @@ splitAr([B|BB], Br, [B|Ar]) :-
 splitAr([B|BB],[B|Br], Ar) :-
 	splitAr(BB, Br, Ar).
 
-splitAbd(Abd, [Pos, Neg]) :-
+splitAbd(Abd, Pos <> Neg) :-
 	splitAbd(Abd, Pos, Neg).
-splitAbd([],[],[]) :- !.
-splitAbd([not R|T],L1,L2) :- !,
-	splitAbd(T, L1, T2),
+splitAbd([],[] <> []) :- !.
+splitAbd([not R|T],L1 <> L2) :- !,
+	splitAbd(T, L1 <> T2),
 	insert(not R, T2, L2).
-splitAbd([R|T],L1,L2) :- !,
-	splitAbd(T, T1, L2),
+splitAbd([R|T],L1 <> L2) :- !,
+	splitAbd(T, T1 <> L2),
 	insert(R, T1, L1).
 
 createApostHead(H, ProH, O) :- !,
@@ -452,18 +453,10 @@ generateDualNoIC :-
 % ---- Query Transformation ---- %
 
 transformQuery(Q, I, O) :-
-	(mode(table); mode(dneed)), !,
 	createApostBody(Q, ProQ, I, T),
 	NF =.. ['not_false'|[T,O]],
 	% write(ProQ), write(NF).
 	ProQ, NF.
-transformQuery(Q, I, O) :-
-	mode(split), !,
-	createApostBody(Q, ProQ, I, T),
-	NF =.. ['not_false'|[T,O1]],
-	% write(ProQ), write(NF).
-	ProQ, NF, 
-	appendResult(O1,O).
 	
 % ---- End of Query Transformation ---- %
 
@@ -472,19 +465,19 @@ transformQuery(Q, I, O) :-
 query(Q, O) :- 
 	(mode(table); mode(dneed)), !, query(Q, [], O).
 query(Q, O) :- 
-	mode(split), !, query(Q, [[],[]], O).
+	mode(split), !, query(Q, []<>[], O).
 query(Q, I, O) :-
 	transformQuery(Q, I, O).
 	
 ask(Q) :- 
-	findall(O, query(Q,O), Sol),
+	findall(O, query(Q,O), Sol).
 	% writeSolution(Sol,1).
-	length(Sol,Len), write(Len).
+	% length(Sol,Len), write(Len).
 
 ask2(I) :- 
 	findall(O, active(phase0,aif,I,O), Sol),
-	% writeSolution(Sol,1).
-	length(Sol,Len), write(Len).
+	writeSolution(Sol,1).
+	% length(Sol,Len), write(Len).
 
 % Delete previously defined abducible
 

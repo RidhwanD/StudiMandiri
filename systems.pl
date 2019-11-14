@@ -115,8 +115,12 @@ writeTable(false) :- !.
 writeTable(H) :-
 	functor(H, Fun, Arity),
 	A2 is Arity + 1,
+	% H =.. [Fun|Arg],
 	concat_atom([Fun,'_ab'],Pred),
 	write(':- table '), write(Pred), write('/'), write(A2), write('.'), nl.
+	% appendSump(Arg, [po(subset/2)], Arg2), 
+	% Pr =.. [Pred|Arg2],
+	% write(':- table '), write(Pr), write('.'), nl.
 
 writeSecDual1(_, [], []) :- !.
 writeSecDual1(Head, Var1, Var2) :-
@@ -126,12 +130,22 @@ writeSecDual1(Head, Var1, Var2) :-
 % ---- Writing all solutions generated ---- %
 writeSolution([], _) :- !, fail.
 writeSolution([S|Sol], Num) :-
-	writeSolution([S|Sol], Num).
-writeSolution([], _).
-writeSolution([S|Sol], Num) :-
+	writeSolutions([S|Sol], Num).
+writeSolutions([], _).
+writeSolutions([S|Sol], Num) :-
 	write_ln(['(', Num, ') ', S]),
 	NextNum is Num + 1,
-	writeSolution(Sol, NextNum).
+	writeSolutions(Sol, NextNum).
+
+% ---- Writing list ---- %
+write_list([]).
+write_list([H|T]) :- 
+	write(H), 
+	write_list(T).
+
+write_ln(List) :- 
+	write_list(List),
+	nl.
 
 % System Predicates
 
@@ -151,30 +165,30 @@ produce_context(O, I, [E|EE]) :-
 	append(I, [E], IE),
 	produce_context(O, IE, EE).
 
-produce_context(I, I, [[],[]]) :- mode(split), !.
-produce_context(E, [[],[]], E) :- mode(split), !.
-produce_context(O, [Pi,Ni], [[E|EE],L]) :-
+produce_context(I, I, []<>[]) :- mode(split), !.
+produce_context(E, []<>[], E) :- mode(split), !.
+produce_context(O, Pi<>Ni, [E|EE]<>L) :-
 	mode(split), 
 	member(E, Pi), !,
-	produce_context(O, [Pi,Ni], [EE,L]).
-produce_context(O, [Pi,Ni], [[E|EE],L]) :-
+	produce_context(O, Pi<>Ni, EE<>L).
+produce_context(O, Pi<>Ni, [E|EE]<>L) :-
 	mode(split), !,
 	negate(E, NE),
 	\+ member(NE, Ni),
 	insert(E, Pi, PiE),
 	% append(Ni, [E], NiE),
-	produce_context(O, [PiE,Ni], [EE,L]).
-produce_context(O, [Pi,Ni], [L,[E|EE]]) :-
+	produce_context(O, PiE<>Ni, EE<>L).
+produce_context(O, Pi<>Ni, L<>[E|EE]) :-
 	mode(split), 
 	member(E, Ni), !,
-	produce_context(O, [Pi,Ni], [L,EE]).
-produce_context(O, [Pi,Ni], [L,[E|EE]]) :-
+	produce_context(O, Pi<>Ni, L<>EE).
+produce_context(O, Pi<>Ni, L<>[E|EE]) :-
 	mode(split), !,
 	negate(E, NE),
 	\+ member(NE, Pi),
 	insert(E, Ni, NiE),
 	% append(Pi, [E], PiE),
-	produce_context(O, [Pi,NiE], [L,EE]).
+	produce_context(O, Pi<>NiE, L<>EE).
 
 insert_abducible(A, I, I) :-
 	(mode(table); mode(dneed)), member(A, I), !.
@@ -184,16 +198,16 @@ insert_abducible(A, I, O) :-
 	\+ member(NA, I),
 	append(I, [A], O).
 
-insert_abducible(not A, [Pos, Neg], [Pos, Neg]) :-
+insert_abducible(not A, Pos<>Neg, Pos<>Neg) :-
 	mode(split), member(not A, Neg), !.
-insert_abducible(not A, [Pos, Neg], [Pos, O]) :-
+insert_abducible(not A, Pos<>Neg, Pos<>O) :-
 	mode(split), !,
 	negate(not A, NA),
 	\+ member(NA, Pos),
 	insert(not A, Neg, O).
-insert_abducible(A, [Pos, Neg], [Pos, Neg]) :-
+insert_abducible(A, Pos<>Neg, Pos<>Neg) :-
 	mode(split), member(A, Pos), !.
-insert_abducible(A, [Pos, Neg], [O, Neg]) :-
+insert_abducible(A, Pos<>Neg, O<>Neg) :-
 	mode(split), !,
 	negate(A, NA),
 	\+ member(NA, Neg),
@@ -388,6 +402,43 @@ subset([L|L1], L2):-
 	
 genSubset([], []).
 genSubset([E|Tail], [E|NTail]):-
-  genSubset(Tail, NTail).
+	genSubset(Tail, NTail).
 genSubset([_|Tail], NTail):-
-  genSubset(Tail, NTail).
+	genSubset(Tail, NTail).
+
+genNegList([],[]).
+genNegList([H1|T1],[H2|T2]) :-
+	negate(H2,H1),
+	genNegList(T1,T2).
+genNegList([H1|T1],[H1|T2]) :-
+	genNegList(T1,T2).
+
+% validate_negation([],_,_) :- !, false.
+% validate_negation([L|L1], L2, O) :-
+%	((member(L, L2), !, validate_negation(L1, L2, O)); 
+%	(negateRest([L|L1],L2, O))).
+
+validate_negation(L1,L2,_) :-
+	subset(L1, L2), !, false.
+validate_negation(L1,L2,O) :-
+	negateRest(L1,L2, O).
+
+negateRest(L, L2, O) :-
+	% negateAll(L, NotL), genSubset(NotL, Sub), Sub \= [], produce_context(O, L2, Sub).
+	findall(Sub, (genNegList(Sub,L), Sub \= L), Subs), produce_contexts(O, L2, Subs).
+
+produce_contexts(O, O, []).
+produce_contexts(O, L2, [Sub|Subs]) :-
+	produce_context(O1, L2, Sub),
+	produce_contexts(O, O1, Subs).
+produce_contexts(O, L2, [Sub|Subs]) :-
+	\+ produce_context(_, L2, Sub),
+	produce_contexts(O, L2, Subs).
+	
+negateAll([], []).
+negateAll([H1|T1], [H2|T2]) :-
+	negate(H1, H2),
+	negateAll(T1, T2).
+  
+appendSump([], X, X).
+appendSump([X|Y], Z, ['_'|W]) :- appendSump(Y,Z,W).
