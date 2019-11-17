@@ -147,14 +147,14 @@ write_ln(List) :-
 negate((not L),L) :- !.
 negate(L,(not L)).
 
-produce_context(I, I, []) :- (mode(table); mode(dneed)), !.
-produce_context(E, [], E) :- (mode(table); mode(dneed)), !.
+produce_context(I, I, []) :- (mode(table); mode(vneg)), !.
+produce_context(E, [], E) :- (mode(table); mode(vneg)), !.
 produce_context(O, I, [E|EE]) :-
-	(mode(table); mode(dneed)), 
+	(mode(table); mode(vneg)), 
 	member(E, I), !,
 	produce_context(O, I, EE).
 produce_context(O, I, [E|EE]) :-
-	(mode(table); mode(dneed)), !,
+	(mode(table); mode(vneg)), !,
 	negate(E, NE),
 	\+ member(NE, I),
 	append(I, [E], IE),
@@ -186,11 +186,11 @@ produce_context(O, Pi<>Ni, L<>[E|EE]) :-
 	produce_context(O, Pi<>NiE, L<>EE).
 
 insert_abducible(A, I, O) :-
-	(mode(table); mode(dneed)),
+	(mode(table); mode(vneg)),
 	negate(A, NA), \+ member(NA, I),
 	\+ member(A, I), !, append(I, [A], O).
 insert_abducible(A, I, I) :-
-	(mode(table); mode(dneed)),
+	(mode(table); mode(vneg)),
 	negate(A, NA), \+ member(NA, I), !.
 	
 insert_abducible(not A, Pos<>Neg, Pos<>O) :-
@@ -297,10 +297,13 @@ genNegList([H1|T1],[H1|T2]) :-
 %	((member(L, L2), !, validate_negation(L1, L2, O)); 
 %	(negateRest([L|L1],L2, O))).
 
-validate_negation(L1,L2,_) :-
-	subset(L1, L2), !, false.
-validate_negation(L1,L2,O) :-
-	negateRest(L1,L2, O).
+% validate_negation(L1,L2,_) :-
+% 	subset(L1, L2), !, false.
+% validate_negation(L1,L2,O) :-
+% 	negateRest(L1,L2, O).
+
+validate_negation(L1,L2,L2) :-
+	\+ subset(L1, L2).
 
 negateRest(L, L2, O) :-
 	% negateAll(L, NotL), genSubset(NotL, Sub), Sub \= [], produce_context(O, L2, Sub).

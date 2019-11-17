@@ -262,7 +262,11 @@ generateTauMinBody(Fun, Var, [rule(R, B)|[]], BRes, I, O, Num, 1) :- !,
 	append(Var, [T, T], EqAR),
 	BEq =.. [SStar|EqAR],
 	writeSecDual1(BEq, Var, Arg),
-	generateTauStar(SStar, Var, Arg, B, I, O, []).
+	((mode(table), generateTauStar(SStar, Var, Arg, B, I, O, []));
+	(mode(vneg), (
+		(Fun = false, !, transformIC(SStar, rule(R, B)));
+		(generateTauStar(SStar, Var, Arg, B, I, O, []))
+	))).
 generateTauMinBody(Fun, Var, [rule(R, B)|[]], (Copy, BRes), I, O, Num, _) :- !,
 	concat_atom([Fun, '_star', Num], SStar),
 	length(Var,N), generateVarList(N,L2),
@@ -273,7 +277,11 @@ generateTauMinBody(Fun, Var, [rule(R, B)|[]], (Copy, BRes), I, O, Num, _) :- !,
 	append(Var, [T, T], EqAR),
 	BEq =.. [SStar|EqAR],
 	writeSecDual1(BEq, Var, Arg),
-	generateTauStar(SStar, Var, Arg, B, I, O, []).
+	((mode(table), generateTauStar(SStar, Var, Arg, B, I, O, []));
+	(mode(vneg), (
+		(Fun = false, !, transformIC(SStar, rule(R, B)));
+		(generateTauStar(SStar, Var, Arg, B, I, O, []))
+	))).
 generateTauMinBody(Fun, Var, [rule(R, B)|L], (Copy, BRes, BBRes), I, O, Num, NumRule) :-
 	concat_atom([Fun, '_star', Num], SStar),
 	length(Var,N), generateVarList(N,L2),
@@ -284,7 +292,11 @@ generateTauMinBody(Fun, Var, [rule(R, B)|L], (Copy, BRes, BBRes), I, O, Num, Num
 	append(Var, [T, T], EqAR),
 	BEq =.. [SStar|EqAR],
 	writeSecDual1(BEq, Var, Arg),
-	generateTauStar(SStar, Var, Arg, B, I, O, []),
+	((mode(table), generateTauStar(SStar, Var, Arg, B, I, O, []));
+	(mode(vneg), (
+		(Fun = false, !, transformIC(SStar, rule(R, B)));
+		(generateTauStar(SStar, Var, Arg, B, I, O, []))
+	))),
 	NewNum is Num + 1,
 	generateTauMinBody(Fun, Var, L, BBRes, O2, O, NewNum, NumRule).
 
@@ -412,6 +424,32 @@ generateDualNoIC :-
 	nl, nl.
 	
 % ---- End of Transformation without IC ---- %
+
+% ---- Transformation of IC ---- %
+
+transformIC(SStar, rule(false, B)) :- 
+	(mode(table); mode(vneg)), !,
+	toList(B, BList),
+	splitAr(BList, Br, Ar),
+	toConj(Br, BrConj),
+	createApostBody(BrConj, ResBr, Ar, I2),
+	Head =.. [SStar|[I,O]],
+	VN =.. [validate_negation|[I2, I, O]],
+	writeRule(Head, (ResBr, VN)),
+	nl.
+transformIC(SStar, rule(false, B)) :- 
+	mode(split), !,
+	toList(B, BList),
+	splitAr(BList, Br, Ar),
+	splitAbd(Ar, Ar2),
+	toConj(Br, BrConj),
+	createApostBody(BrConj, ResBr, Ar2, I2),
+	Head =.. [SStar|[I,O]],
+	VN =.. [validate_negation|[I2, I, O]],
+	writeRule(Head, (ResBr, VN)),
+	nl.
+
+% ---- End of Transformation of IC ---- %
 
 % ---- Query Transformation ---- %
 
