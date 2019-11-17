@@ -1,4 +1,4 @@
-:- dynamic defined/1, rule/2, rule/3, fact/1, isPred/1, abds/1, dtrie/1.
+:- dynamic defined/1, rule/2, rule/3, fact/1, isPred/1, abds/1.
 
 useFiles :-
 	consult('SMGit/StudiMandiri/systems.pl').
@@ -16,13 +16,8 @@ clear :-
 	retractall(isTransformed(_)),
 	retractall(untrans(_)),
 	retractall(abds(_)),
-	retractall(isPred(_)),
-	assert(numvars(0)),
-	dtrie(X),trie_destroy(X),
-	retractall(dtrie(_)),
-	trie_new(T), assert(dtrie(T)).
-clear :-
-	trie_new(T), assert(dtrie(T)).
+	retractall(isPred(_)).
+clear.
 
 :- useFiles, retractall(mode(_)), assert(mode(table)), clear.
 
@@ -36,9 +31,9 @@ switchMode(t) :- !,
 	retractall(mode(_)),
 	assert(mode(table)).
 % Switch to dual by need mode
-switchMode(n) :- !,
+switchMode(v) :- !,
 	retractall(mode(_)),
-	assert(mode(dneed)).
+	assert(mode(vneg)).
 % Switch to split solution mode
 switchMode(sp) :- !,
 	retractall(mode(_)),
@@ -58,7 +53,7 @@ tellFileOutput(F) :-
 	concat_atom(['SMGit/StudiMandiri/out/', F, '_s.pl'], FAb),
 	tell(FAb).
 tellFileOutput(F) :-
-	mode(dneed), !,
+	mode(vneg), !,
 	concat_atom(['SMGit/StudiMandiri/out/', F, '_n.pl'], FAb),
 	tell(FAb).
 tellFileOutput(F) :-
@@ -71,29 +66,13 @@ load(F) :-
 	concat_atom(['SMGit/StudiMandiri/out/', F, '_s.pl'], FOut),
 	consult(FOut).	
 load(F) :-
-	mode(dneed), !,
+	mode(vneg), !,
 	concat_atom(['SMGit/StudiMandiri/out/', F, '_n.pl'], FOut),
 	consult(FOut).	
 load(F) :-
 	mode(table), !,
 	concat_atom(['SMGit/StudiMandiri/out/', F, '.pl'], FOut),
 	consult(FOut).	
-
-% Menambahkan indeks ke rule/2
-add_indices :-
-	retract(defined(H)),
-	findRules(H, R),
-	add_indices_to_rule(R, 1),
-	add_indices,
-	assert(defined(H)).
-add_indices.
-
-add_indices_to_rule([], _).
-add_indices_to_rule([rule(H,B)|RR], N) :-
-	% retract(rule(H,B)),
-	assert(rule(H,B,N)),
-	NN is N + 1,
-	add_indices_to_rule(RR, NN).
 
 % Transforming the abductive program
 transform(Filename) :-
@@ -106,8 +85,7 @@ transform(Filename) :-
 
 readProgramInput :-
 	clear,
-	readRules,
-	add_indices.
+	readRules.
 
 readRules :-
 	read(C),
@@ -120,8 +98,7 @@ readRules :-
 	->
 		readJustFacts
 	;
-		readRule(C), 
-		% write(C), nl,
+		readRule(C),
 		readRules
 	).
 
@@ -135,7 +112,6 @@ readJustFacts :-
 	;
 		readRule(C),
 		writeRule(C, true),
-		% write(C), nl,
 		readJustFacts
 	).
 
@@ -183,7 +159,7 @@ generateTauAposts([R|RR]) :-
 
 generateTauApost(rule(false, _)) :- !.
 generateTauApost(rule(H, B)) :- 
-	(mode(table); mode(dneed)), !,
+	(mode(table); mode(vneg)), !,
 	toList(B, BList),
 	splitAr(BList, Br, Ar),
 	toConj(Br, BrConj),
@@ -270,8 +246,6 @@ generateDualRules(H, R) :- !,
 	generateVarList(Arity,L),
 	generateTauMinHead(F, L, I, O, HRes),
 	generateTauMinBody(F, L, R, BRes, I, O, 1, NumRule),
-	% generateTauMinHead(F, L, I, I, Emp),
-	% writeRule(Emp, true),
 	writeRule(HRes, BRes).
 	
 generateTauMinHead(F, L, I, O, HRes) :- !,
@@ -319,14 +293,6 @@ generateTauMinBody(Fun, Var, [rule(R, B)|L], (Copy, BRes, BBRes), I, O, Num, Num
 % ---- T* Transformation ---- %
 
 generateTauStar(_, _, _, true, _, _, _) :- !.	
-generateTauStar(Head, Var, _, _, I, O, _) :-
-	mode(dneed), !,
-	append(Var, [I, O], Arg),
-	Head2 =.. [Head|Arg],
-	sub_atom(Head,_,1,0,Num),
-	HBody =.. [Head|Var],
-	Body =.. [dual,Num,HBody,I,O],
-	writeRule(Head2,Body).
 generateTauStar(Head, Var, R, (RBody, RRBody), I, O, PrevB) :- !,
 	RBody =.. [_|A1],
 	subtituteArg(Var,R,A1,Var2),
@@ -345,9 +311,6 @@ generateTauStar(Head, Var, R, RBody, I, O, PrevB) :- !,
 	writeRule(Head2,Body).
 	
 generateTauStarBody([not _|RPrevB], CurB, I, O, (ResB)) :- !,
-	% PrevB =.. [F|Arg],
-	% append(Arg, [I, I1], Arg2),
-	% PrevBn =.. [F|Arg2],
 	generateTauStarBody(RPrevB, CurB, I, O, ResB).
 generateTauStarBody([PrevB|RPrevB], CurB, I, O, (PrevBn, ResB)) :- !,
 	PrevB =.. [F|Arg],
@@ -455,7 +418,6 @@ generateDualNoIC :-
 transformQuery(Q, I, O) :-
 	createApostBody(Q, ProQ, I, T),
 	NF =.. ['not_false'|[T,O]],
-	% write(ProQ), write(NF).
 	ProQ, NF.
 	
 % ---- End of Query Transformation ---- %
@@ -463,7 +425,7 @@ transformQuery(Q, I, O) :-
 % ---- Querying abductive program ---- %
 
 query(Q, O) :- 
-	(mode(table); mode(dneed)), !, query(Q, [], O).
+	(mode(table); mode(vneg)), !, query(Q, [], O).
 query(Q, O) :- 
 	mode(split), !, query(Q, []<>[], O).
 query(Q, I, O) :-
@@ -472,11 +434,6 @@ query(Q, I, O) :-
 ask(Q) :- 
 	findall(O, query(Q,O), Sol).
 	% writeSolution(Sol,1).
-	% length(Sol,Len), write(Len).
-
-ask2(I) :- 
-	findall(O, active(phase0,aif,I,O), Sol),
-	writeSolution(Sol,1).
 	% length(Sol,Len), write(Len).
 
 % Delete previously defined abducible
