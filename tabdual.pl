@@ -185,8 +185,8 @@ splitAr([B|BB], Br, [B|Ar]) :-
 splitAr([B|BB],[B|Br], Ar) :-
 	splitAr(BB, Br, Ar).
 
-splitAbd(Abd, Pos <> Neg) :-
-	splitAbd(Abd, Pos, Neg).
+% splitAbd(Abd, Pos <> Neg) :-
+% 	splitAbd(Abd, Pos, Neg).
 splitAbd([],[] <> []) :- !.
 splitAbd([not R|T],L1 <> L2) :- !,
 	splitAbd(T, L1 <> T2),
@@ -262,7 +262,7 @@ generateTauMinBody(Fun, Var, [rule(R, B)|[]], BRes, I, O, Num, 1) :- !,
 	append(Var, [T, T], EqAR),
 	BEq =.. [SStar|EqAR],
 	writeSecDual1(BEq, Var, Arg),
-	((mode(table), generateTauStar(SStar, Var, Arg, B, I, O, []));
+	(((mode(table);mode(split)), generateTauStar(SStar, Var, Arg, B, I, O, []));
 	(mode(vneg), (
 		(Fun = false, !, transformIC(SStar, rule(R, B)));
 		(generateTauStar(SStar, Var, Arg, B, I, O, []))
@@ -277,7 +277,7 @@ generateTauMinBody(Fun, Var, [rule(R, B)|[]], (Copy, BRes), I, O, Num, _) :- !,
 	append(Var, [T, T], EqAR),
 	BEq =.. [SStar|EqAR],
 	writeSecDual1(BEq, Var, Arg),
-	((mode(table), generateTauStar(SStar, Var, Arg, B, I, O, []));
+	(((mode(table);mode(split)), generateTauStar(SStar, Var, Arg, B, I, O, []));
 	(mode(vneg), (
 		(Fun = false, !, transformIC(SStar, rule(R, B)));
 		(generateTauStar(SStar, Var, Arg, B, I, O, []))
@@ -292,7 +292,7 @@ generateTauMinBody(Fun, Var, [rule(R, B)|L], (Copy, BRes, BBRes), I, O, Num, Num
 	append(Var, [T, T], EqAR),
 	BEq =.. [SStar|EqAR],
 	writeSecDual1(BEq, Var, Arg),
-	((mode(table), generateTauStar(SStar, Var, Arg, B, I, O, []));
+	(((mode(table);mode(split)), generateTauStar(SStar, Var, Arg, B, I, O, []));
 	(mode(vneg), (
 		(Fun = false, !, transformIC(SStar, rule(R, B)));
 		(generateTauStar(SStar, Var, Arg, B, I, O, []))

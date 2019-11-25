@@ -1,5 +1,5 @@
-abds([q/1, r/1]).
+abds([q/1, r/1, s/1, t/1]).
 
-s(X) <- r(X).
-p(X) <- not q(X), r(X).
-<- s(X), q(X).
+b(X) <- s(X).
+c(X) <- t(X).
+a(X) <- q(X), r(X), not b(X), not c(X).
