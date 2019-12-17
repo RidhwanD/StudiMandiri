@@ -1,9 +1,21 @@
 active(phase0, aif),active(phase0, endo_g),inactive(phase0, caspase9),inactive(phase0, caspase6),inactive(phase0, bcl2),inactive(phase0, caspase7),inactive(phase0, akt),inactive(phase0, xiap).
+active(aif),active(endo_g),inactive(caspase9),inactive(caspase6),inactive(bcl2),inactive(caspase7),inactive(akt),inactive(xiap).
 
+50.531, 341180
+24.828, 319784
+
+7060.734 518528
+4120.			run it again!!
+cd C:\Program Files (x86)\XSB\bin
+xsb --max_subgoal_size 50 --max_subgoal_action a
+['D:/kuliah/document/s2/materi dan tugas/studi mandiri/tabdual-plus-int-master/out/ceksub_sub.pl'].
 ['D:/kuliah/document/s2/materi dan tugas/studi mandiri/tabdual-plus-int-master/tabdual.pl'].
 switch_mode(s), transform(allinone), load(allinone).
 ['D:/kuliah/document/s2/materi dan tugas/studi mandiri/tabdual-plus-int-master/tabdual.pl'].
 transform(allinone), load(allinone).
+active(phase0, aif)
+['D:/kuliah/document/s2/materi dan tugas/studi mandiri/tabdual-plus-int-master/tabdual.pl'].
+switch_mode(s), transform(simpfchemo), load(simpfchemo).
 
 beginProlog.
 q(1).
@@ -22,7 +34,10 @@ w(X) <- u(X).
 % splitAbd([R|T],[R|T1],L2) :- !,
 %	splitAbd(T, T1, L2).
 
-
+false_star_1(I,O) :- 
+	true,validate_negation([drug_induced(drug,X),drug_inhibited(drug,X)],I,O).
+false_star_2(I,O) :- 
+	true,validate_negation([drug_induced(drug,apoptosis)],I,O).
 
 false_star_1(I,O) :- 
 	true,validate_negation([drug_induced(phase0,drug,X),drug_inhibited(phase0,drug,X)],I,O).
@@ -55,3 +70,21 @@ not_r(_5278,_5306,_5312) :- insert_abducible(not r(_5278),_5306,_5312).
 false_star1(_5468,_5474) :- q(_5442,[],_5722),r(_5442,_5722,_5472),ceks(_5472,_5468,_5474).
 not_false(_5468,_5474) :- false_star1(_5468,_5474).
 
+A: Kevin+Rania Rabu 13:00-14:00
+B: Ryan+Naufal Selasa 10:00-11:00
+C: Helmi+Krisna Jumat 13:00-14:00
+H: Adhyt+Alvin Jumat 13:00-14:00
+
+limit(10,  (limit(10,  (limit(10, a(X, Y)), b(Y, Z))), x(A, B))).
+
+limitQuery((Q, QQ), Lim, Acc) :- !,
+	Res =.. [limit|[Lim,Q]],
+	limitQuery(QQ, Res, Lim, Acc).
+limitQuery(Q, Lim, Acc) :-
+	Acc =.. [limit|[Lim,Q]].
+
+limitQuery((Q, QQ), Prev, Lim, Acc) :- !,
+	Res =.. [limit|[Lim,(Prev, Q)]],
+	limitQuery(QQ, Res, Lim, Acc).
+limitQuery(Q, Prev, Lim, Acc) :-
+	Acc =.. [limit|[Lim,(Prev, Q)]].

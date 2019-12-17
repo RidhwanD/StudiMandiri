@@ -453,11 +453,34 @@ transformIC(SStar, rule(false, B)) :-
 
 % ---- Query Transformation ---- %
 
-transformQuery(Q, I, O) :-
+transformBody((B, BB), (ProB, ProBB), I, O, Lim) :- !,
+	alpha(B, PrB, I, IO),
+	ProB =.. [limit|[Lim,PrB]],
+	transformBody(BB, ProBB, IO, O, Lim).
+transformBody(B, ProB, I, O, Lim) :-
+	alpha(B, PrB, I, O),
+	ProB =.. [limit|[Lim,PrB]].
+
+transformQuery(Q, I, O, Lim) :-
 	createApostBody(Q, ProQ, I, T),
+	% transformBody(Q, ProQ, I, T, Lim),
+	limitQuery(ProQ, Lim, Rs),
 	NF =.. ['not_false'|[T,O]],
-	ProQ, NF.
-	
+	% ProQ, NF.
+	Rs, NF.
+
+limitQuery((Q, QQ), Lim, Acc) :- !,
+	Res =.. [limit|[Lim,Q]],
+	limitQuery(QQ, Res, Lim, Acc).
+limitQuery(Q, Lim, Acc) :-
+	Acc =.. [limit|[Lim,Q]].
+
+limitQuery((Q, QQ), Prev, Lim, Acc) :- !,
+	Res =.. [limit|[Lim,(Prev, Q)]],
+	limitQuery(QQ, Res, Lim, Acc).
+limitQuery(Q, Prev, Lim, Acc) :-
+	Acc =.. [limit|[Lim,(Prev, Q)]].
+
 % ---- End of Query Transformation ---- %
 
 % ---- Querying abductive program ---- %
@@ -470,9 +493,23 @@ query(Q, I, O) :-
 	transformQuery(Q, I, O).
 	
 ask(Q) :- 
-	findall(O, query(Q,O), Sol).
+	findall(O, query(Q,O), Sol),
 	% writeSolution(Sol,1).
-	% length(Sol,Len), write(Len).
+	length(Sol,Len), write(Len).
+
+% WITH LIMIT %
+
+ask(Q, O, Lim) :- 
+	(mode(table); mode(vneg)), !, ask(Q, [], O, Lim).
+ask(Q, O, Lim) :- 
+	mode(split), !, ask(Q, []<>[], O, Lim).
+ask(Q, I, O, Lim) :-
+	transformQuery(Q, I, O, Lim).
+
+ask(Q, Lim) :- 
+	findall(O, ask(Q,O,Lim), Sol),
+	% writeSolution(Sol,1).
+	length(Sol,Len), write(Len).
 
 % Delete previously defined abducible
 

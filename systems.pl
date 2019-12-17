@@ -199,7 +199,8 @@ insert_abducible(not A, Pos<>Neg, Pos<>O) :-
 	\+ member(A, Neg), !, insert(not A, Neg, O).
 insert_abducible(not A, Pos<>Neg, Pos<>Neg) :-
 	mode(split),
-	negate(A, NA), \+ member(NA, Pos), !.
+	negate(A, NA), \+ member(NA, Pos), 
+	member(A, Neg), !.
 insert_abducible(A, Pos<>Neg, O<>Neg) :-
 	mode(split),
 	negate(A, NA), \+ member(NA, Neg),
@@ -274,10 +275,18 @@ inputGround([H|T],L2,[H|T3]) :-
 	\+ ground(H), !,
 	inputGround(T,L2,T3).
 	
-subset([], _).
-subset([L|L1], L2):-
+subsets(P1<>N1,P2<>N2) :-
+	mode(split), !,
+	subsetReg(P1, P2),
+	subsetReg(N1, N2).
+subsets(X, Y) :-
+	\+ mode(split), !,
+	subsetReg(X, Y).
+	
+subsetReg([], _).
+subsetReg([L|L1], L2):-
 	member(L, L2),
-	subset(L1, L2).
+	subsetReg(L1, L2).
 	
 genSubset([], []).
 genSubset([E|Tail], [E|NTail]):-
