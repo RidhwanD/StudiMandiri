@@ -270,9 +270,9 @@ externally_inhibited_star1(_20628,_20630,_21144,_21150) :- exists(_20628,_20642,
 externally_inhibited_star1(_20628,_20630,_21144,_21150) :- exists(_20628,_20642,_21144,_21794),possible_drug_effect(_20642,inhibit,_20630,_21794,_21864),not_drug_inhibited(_20628,_20642,_20630,_21864,_21150).
 not_externally_inhibited(_21120,_21126,_21144,_21150) :- externally_inhibited_star1(_21120,_21126,_21144,_21150).
 
-false_star1(_22340,_22346) :- true,validate_negation([drug_induced(phase0,drug,_22082),drug_inhibited(phase0,drug,_22082)],_22340,_22346).
+false_star1 :- true,assertICs([drug_induced(phase0,drug,_22082),drug_inhibited(phase0,drug,_22082)]).
 
-false_star2(_22552,_22558) :- true,validate_negation([drug_induced(phase0,drug,apoptosis)],_22552,_22558).
+false_star2 :- true,assertICs([drug_induced(phase0,drug,apoptosis)]).
 
-not_false(_22112,_22118) :- copy_term([],[]),false_star1(_22112,_22172),copy_term([],[]),false_star2(_22172,_22118).
-
+not_false :- copy_term([],[]),false_star1,copy_term([],[]),false_star2.
+:- not_false.

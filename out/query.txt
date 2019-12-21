@@ -2,7 +2,7 @@ active(phase0, aif),active(phase0, endo_g),inactive(phase0, caspase9),inactive(p
 active(aif),active(endo_g),inactive(caspase9),inactive(caspase6),inactive(bcl2),inactive(caspase7),inactive(akt),inactive(xiap).
 
 50.531, 341180
-24.828, 319784
+24.828, 319784			17610 4		624690 5
 
 7060.734 518528
 4120.			run it again!!
@@ -16,6 +16,11 @@ transform(allinone), load(allinone).
 active(phase0, aif)
 ['D:/kuliah/document/s2/materi dan tugas/studi mandiri/tabdual-plus-int-master/tabdual.pl'].
 switch_mode(s), transform(simpfchemo), load(simpfchemo).
+
+false_star1 :- true,assertICs([drug_induced(phase0,drug,_22082),drug_inhibited(phase0,drug,_22082)]).
+false_star2 :- true,assertICs([drug_induced(phase0,drug,apoptosis)]).
+not_false :- true,false_star1,true,false_star2.
+:- not_false.
 
 beginProlog.
 q(1).
@@ -88,3 +93,26 @@ limitQuery((Q, QQ), Prev, Lim, Acc) :- !,
 	limitQuery(QQ, Res, Lim, Acc).
 limitQuery(Q, Prev, Lim, Acc) :-
 	Acc =.. [limit|[Lim,(Prev, Q)]].
+
+%% =================  ORIGINAL VALIDATE NEGATION ==================== %%
+transformIC(SStar, rule(false, B)) :- 
+	(mode(table); mode(vneg)), !,
+	toList(B, BList),
+	splitAr(BList, Br, Ar),
+	toConj(Br, BrConj),
+	createApostBody(BrConj, ResBr, Ar, I2),
+	Head =.. [SStar|[I,O]],
+	VN =.. [validate_negation|[I2, I, O]],
+	writeRule(Head, (ResBr, VN)),
+	nl.
+transformIC(SStar, rule(false, B)) :- 
+	mode(split), !,
+	toList(B, BList),
+	splitAr(BList, Br, Ar),
+	splitAbd(Ar, Ar2),
+	toConj(Br, BrConj),
+	createApostBody(BrConj, ResBr, Ar2, I2),
+	Head =.. [SStar|[I,O]],
+	VN =.. [validate_negation|[I2, I, O]],
+	writeRule(Head, (ResBr, VN)),
+	nl.

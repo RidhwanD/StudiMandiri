@@ -42,6 +42,11 @@ assertFact(H) :-
 	unground(H, H2),
 	assert(fact(H2)).
 	
+assertICs(H) :-
+	ic(H), !.
+assertICs(H) :-
+	assert(ic(H)).
+	
 assertBody((B1, B2)) :- !,
 	assertIsPred(B1),
 	assertBody(B2).
@@ -310,6 +315,10 @@ genNegList([H1|T1],[H1|T2]) :-
 % 	subset(L1, L2), !, false.
 % validate_negation(L1,L2,O) :-
 % 	negateRest(L1,L2, O).
+
+not_false(I,O) :-
+	ic(X),
+	validate_negation(X,I,O).
 
 validate_negation(L1,L2,L2) :-
 	\+ subset(L1, L2).

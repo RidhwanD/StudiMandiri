@@ -270,8 +270,8 @@ externally_inhibited_star1(_20634,_20636,_21150,_21156) :- exists(_20634,_20648,
 externally_inhibited_star1(_20634,_20636,_21150,_21156) :- exists(_20634,_20648,_21150,_21800),possible_drug_effect(_20648,inhibit,_20636,_21800,_21870),not_drug_inhibited(_20634,_20648,_20636,_21870,_21156).
 not_externally_inhibited(_21126,_21132,_21150,_21156) :- externally_inhibited_star1(_21126,_21132,_21150,_21156).
 
-false_star1(_22118,_22124) :- not_drug_induced(phase0,drug,_22088,_22118,_22124).
-false_star1(_22118,_22124) :- drug_induced(phase0,drug,_22088,_22118,_22472),not_drug_inhibited(phase0,drug,_22088,_22472,_22124).
-false_star2(_22178,_22124) :- not_drug_induced(phase0,drug,apoptosis,_22178,_22124).
-not_false(_22118,_22124) :- copy_term([],[]),false_star1(_22118,_22178),copy_term([],[]),false_star2(_22178,_22124).
-
+false_star1(_22154,_22256) :- not_drug_induced(phase0,drug,_22088,_22154,_22256).
+false_star1(_22154,_22256) :- drug_induced(phase0,drug,_22088,_22154,_22448),not_drug_inhibited(phase0,drug,_22088,_22448,_22256).
+false_star2(_22160,_22256) :- not_drug_induced(phase0,drug,apoptosis,_22160,_22256).
+not_false :- copy_term([],[]),false_star1,copy_term([],[]),false_star2.
+:- not_false.

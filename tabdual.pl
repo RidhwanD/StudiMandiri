@@ -1,4 +1,4 @@
-:- dynamic defined/1, rule/2, rule/3, fact/1, isPred/1, abds/1.
+:- dynamic defined/1, rule/2, rule/3, fact/1, isPred/1, abds/1, ic/1.
 
 useFiles :-
 	consult('SMGit/StudiMandiri/systems.pl').
@@ -246,8 +246,12 @@ generateDualRules(H, R) :- !,
 	generateVarList(Arity,L),
 	generateTauMinHead(F, L, I, O, HRes),
 	generateTauMinBody(F, L, R, BRes, I, O, 1, NumRule),
-	writeRule(HRes, BRes).
-	
+	writeRule(HRes, BRes),
+	((F = false, write(':- not_false.')); true).
+
+generateTauMinHead(false, L, _, _, HRes) :- !,
+	concat_atom(['not_', false], NotF),
+	HRes =.. [NotF|L].
 generateTauMinHead(F, L, I, O, HRes) :- !,
 	concat_atom(['not_', F], NotF),
 	append(L, [I, O], NewL),
@@ -257,7 +261,8 @@ generateTauMinBody(_, _, [], _, _, _, _, _) :- !.
 generateTauMinBody(Fun, Var, [rule(R, B)|[]], BRes, I, O, Num, 1) :- !,
 	concat_atom([Fun, '_star', Num], SStar),
 	append(Var, [I, O], NewAR),
-	BRes =.. [SStar| NewAR],
+	((Fun = false, BRes =.. [SStar| Var]);		%% NEWEST VALNEG.
+	BRes =.. [SStar| NewAR]),
 	R =.. [_|Arg],
 	append(Var, [T, T], EqAR),
 	BEq =.. [SStar|EqAR],
@@ -272,7 +277,8 @@ generateTauMinBody(Fun, Var, [rule(R, B)|[]], (Copy, BRes), I, O, Num, _) :- !,
 	length(Var,N), generateVarList(N,L2),
 	Copy =.. [copy_term|[Var, L2]],
 	append(L2, [I, O], NewAR),
-	BRes =.. [SStar| NewAR],
+	((Fun = false, BRes =.. [SStar| Var]);		%% NEWEST VALNEG.
+	BRes =.. [SStar| NewAR]),
 	R =.. [_|Arg],
 	append(Var, [T, T], EqAR),
 	BEq =.. [SStar|EqAR],
@@ -287,7 +293,8 @@ generateTauMinBody(Fun, Var, [rule(R, B)|L], (Copy, BRes, BBRes), I, O, Num, Num
 	length(Var,N), generateVarList(N,L2),
 	append(L2, [I, O2], NewAR),
 	Copy =.. [copy_term|[Var, L2]],
-	BRes =.. [SStar| NewAR],
+	((Fun = false, BRes =.. [SStar| Var]);		%% NEWEST VALNEG.
+	BRes =.. [SStar| NewAR]),
 	R =.. [_|Arg],
 	append(Var, [T, T], EqAR),
 	BEq =.. [SStar|EqAR],
@@ -433,8 +440,8 @@ transformIC(SStar, rule(false, B)) :-
 	splitAr(BList, Br, Ar),
 	toConj(Br, BrConj),
 	createApostBody(BrConj, ResBr, Ar, I2),
-	Head =.. [SStar|[I,O]],
-	VN =.. [validate_negation|[I2, I, O]],
+	Head =.. [SStar|[]],
+	VN =.. [assertICs|[I2]],
 	writeRule(Head, (ResBr, VN)),
 	nl.
 transformIC(SStar, rule(false, B)) :- 
@@ -444,8 +451,8 @@ transformIC(SStar, rule(false, B)) :-
 	splitAbd(Ar, Ar2),
 	toConj(Br, BrConj),
 	createApostBody(BrConj, ResBr, Ar2, I2),
-	Head =.. [SStar|[I,O]],
-	VN =.. [validate_negation|[I2, I, O]],
+	Head =.. [SStar|[]],
+	VN =.. [assertICs|[I2]],
 	writeRule(Head, (ResBr, VN)),
 	nl.
 
@@ -453,21 +460,23 @@ transformIC(SStar, rule(false, B)) :-
 
 % ---- Query Transformation ---- %
 
-transformBody((B, BB), (ProB, ProBB), I, O, Lim) :- !,
-	alpha(B, PrB, I, IO),
-	ProB =.. [limit|[Lim,PrB]],
-	transformBody(BB, ProBB, IO, O, Lim).
-transformBody(B, ProB, I, O, Lim) :-
-	alpha(B, PrB, I, O),
-	ProB =.. [limit|[Lim,PrB]].
+transformBody((B, BB), (ProB, NF, ProBB), I, O) :- !,
+	alpha(B, ProB, I, IO),
+	NF =.. [not_false|[IO,IO2]],
+	transformBody(BB, ProBB, IO2, O).
+transformBody(B, (ProB, NF), I, O) :-
+	alpha(B, ProB, I, IO),
+	NF =.. [not_false|[IO,O]].
 
-transformQuery(Q, I, O, Lim) :-
-	createApostBody(Q, ProQ, I, T),
-	% transformBody(Q, ProQ, I, T, Lim),
-	limitQuery(ProQ, Lim, Rs),
-	NF =.. ['not_false'|[T,O]],
+% transformQuery(Q, I, O, Lim) :-
+transformQuery(Q, I, O) :-
+	% createApostBody(Q, ProQ, I, T),
+	transformBody(Q, ProQ, I, O),
+	% limitQuery(ProQ, Lim, Rs),
+	% NF =.. ['not_false'|[T,O]],
 	% ProQ, NF.
-	Rs, NF.
+	% Rs, NF.
+	write(ProQ).
 
 limitQuery((Q, QQ), Lim, Acc) :- !,
 	Res =.. [limit|[Lim,Q]],
@@ -492,10 +501,15 @@ query(Q, O) :-
 query(Q, I, O) :-
 	transformQuery(Q, I, O).
 	
-ask(Q) :- 
-	findall(O, query(Q,O), Sol),
+% ask(Q) :- 
+	% findall(O, query(Q,O), Sol),
 	% writeSolution(Sol,1).
-	length(Sol,Len), write(Len).
+	% length(Sol,Len), write(Len).
+	
+% ask(Q) :- 
+%	open(file('D:/Kuliah/Document/S2/Materi dan Tugas/Studi Mandiri/tabdual-plus-int-master/out/solution.txt'), write, Str),
+%	forall(ask(Q,O), write_to_file(O, Str)),
+%	close(Str).
 
 % WITH LIMIT %
 
