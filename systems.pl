@@ -316,11 +316,10 @@ genNegList([H1|T1],[H1|T2]) :-
 % validate_negation(L1,L2,O) :-
 % 	negateRest(L1,L2, O).
 
-not_false(I,O) :-
-	ic(X),
-	validate_negation(X,I,O).
+not_false(I) :-
+	forall(ic(X), validate_negation(X,I)).
 
-validate_negation(L1,L2,L2) :-
+validate_negation(L1,L2) :-
 	\+ subset(L1, L2).
 
 negateRest(L, L2, O) :-

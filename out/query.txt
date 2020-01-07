@@ -116,3 +116,10 @@ transformIC(SStar, rule(false, B)) :-
 	VN =.. [validate_negation|[I2, I, O]],
 	writeRule(Head, (ResBr, VN)),
 	nl.
+	
+not_false(I,O) :-
+	ic(X),
+	validate_negation(X,I,O).
+
+validate_negation(L1,L2,L2) :-
+	\+ subset(L1, L2).

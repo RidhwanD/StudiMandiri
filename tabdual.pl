@@ -247,9 +247,9 @@ generateDualRules(H, R) :- !,
 	generateTauMinHead(F, L, I, O, HRes),
 	generateTauMinBody(F, L, R, BRes, I, O, 1, NumRule),
 	writeRule(HRes, BRes),
-	((F = false, write(':- not_false.')); true).
+	((mode(vneg), F = false, write(':- not_false.')); true).
 
-generateTauMinHead(false, L, _, _, HRes) :- !,
+generateTauMinHead(false, L, _, _, HRes) :- mode(vneg), !,
 	concat_atom(['not_', false], NotF),
 	HRes =.. [NotF|L].
 generateTauMinHead(F, L, I, O, HRes) :- !,
@@ -261,7 +261,7 @@ generateTauMinBody(_, _, [], _, _, _, _, _) :- !.
 generateTauMinBody(Fun, Var, [rule(R, B)|[]], BRes, I, O, Num, 1) :- !,
 	concat_atom([Fun, '_star', Num], SStar),
 	append(Var, [I, O], NewAR),
-	((Fun = false, BRes =.. [SStar| Var]);		%% NEWEST VALNEG.
+	((mode(vneg), Fun = false, BRes =.. [SStar| Var]);		%% NEWEST VALNEG.
 	BRes =.. [SStar| NewAR]),
 	R =.. [_|Arg],
 	append(Var, [T, T], EqAR),
@@ -277,7 +277,7 @@ generateTauMinBody(Fun, Var, [rule(R, B)|[]], (Copy, BRes), I, O, Num, _) :- !,
 	length(Var,N), generateVarList(N,L2),
 	Copy =.. [copy_term|[Var, L2]],
 	append(L2, [I, O], NewAR),
-	((Fun = false, BRes =.. [SStar| Var]);		%% NEWEST VALNEG.
+	((mode(vneg), Fun = false, BRes =.. [SStar| Var]);		%% NEWEST VALNEG.
 	BRes =.. [SStar| NewAR]),
 	R =.. [_|Arg],
 	append(Var, [T, T], EqAR),
@@ -293,7 +293,7 @@ generateTauMinBody(Fun, Var, [rule(R, B)|L], (Copy, BRes, BBRes), I, O, Num, Num
 	length(Var,N), generateVarList(N,L2),
 	append(L2, [I, O2], NewAR),
 	Copy =.. [copy_term|[Var, L2]],
-	((Fun = false, BRes =.. [SStar| Var]);		%% NEWEST VALNEG.
+	((mode(vneg), Fun = false, BRes =.. [SStar| Var]);		%% NEWEST VALNEG.
 	BRes =.. [SStar| NewAR]),
 	R =.. [_|Arg],
 	append(Var, [T, T], EqAR),
@@ -462,21 +462,22 @@ transformIC(SStar, rule(false, B)) :-
 
 transformBody((B, BB), (ProB, NF, ProBB), I, O) :- !,
 	alpha(B, ProB, I, IO),
-	NF =.. [not_false|[IO,IO2]],
-	transformBody(BB, ProBB, IO2, O).
+	NF =.. [not_false|[IO]],
+	transformBody(BB, ProBB, IO, O).
 transformBody(B, (ProB, NF), I, O) :-
-	alpha(B, ProB, I, IO),
-	NF =.. [not_false|[IO,O]].
+	alpha(B, ProB, I, O),
+	NF =.. [not_false|[O]].
 
 % transformQuery(Q, I, O, Lim) :-
 transformQuery(Q, I, O) :-
 	% createApostBody(Q, ProQ, I, T),
-	transformBody(Q, ProQ, I, O),
 	% limitQuery(ProQ, Lim, Rs),
 	% NF =.. ['not_false'|[T,O]],
 	% ProQ, NF.
 	% Rs, NF.
-	write(ProQ).
+	transformBody(Q, ProQ, I, O),
+	% write(ProQ).
+	ProQ.
 
 limitQuery((Q, QQ), Lim, Acc) :- !,
 	Res =.. [limit|[Lim,Q]],
@@ -500,6 +501,8 @@ query(Q, O) :-
 	mode(split), !, query(Q, []<>[], O).
 query(Q, I, O) :-
 	transformQuery(Q, I, O).
+query(Q) :- 
+	forall(query(Q,O), write(O)).
 	
 % ask(Q) :- 
 	% findall(O, query(Q,O), Sol),
