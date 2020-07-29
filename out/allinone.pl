@@ -1,6 +1,6 @@
 exists(phase0,drug).
-possible_drug_effect(_4716,inhibit,_4720).
-possible_drug_effect(_4790,induce,_4794).
+possible_drug_effect(_h1018,inhibit,_h1048).
+possible_drug_effect(_h1122,induce,_h1152).
 absent(calpain).
 absent(bax).
 absent(cytoc).
@@ -161,117 +161,17 @@ tumor_suppressor(bax).
 tumor_suppressor(p53).
 tumor_suppressor(bcl2).
 tumor_suppressor(atm_atr).
-exists(_7258,_7260,_7282,_7282) :- exists(_7258,_7260).
-not_exists(_7258,_7260,_7352,_7352) :- not exists(_7258,_7260).
-possible_drug_effect(_7446,_7448,_7450,_7478,_7478) :- possible_drug_effect(_7446,_7448,_7450).
-not_possible_drug_effect(_7446,_7448,_7450,_7562,_7562) :- not possible_drug_effect(_7446,_7448,_7450).
-absent(_7678,_7694,_7694) :- absent(_7678).
-not_absent(_7678,_7750,_7750) :- not absent(_7678).
-reaction(_7822,_7838,_7838) :- reaction(_7822).
-not_reaction(_7822,_7894,_7894) :- not reaction(_7822).
-inhibitor(_7966,_7968,_7990,_7990) :- inhibitor(_7966,_7968).
-not_inhibitor(_7966,_7968,_8060,_8060) :- not inhibitor(_7966,_7968).
-oncogene(_8154,_8170,_8170) :- oncogene(_8154).
-not_oncogene(_8154,_8226,_8226) :- not oncogene(_8154).
-tumor_suppressor(_8298,_8314,_8314) :- tumor_suppressor(_8298).
-not_tumor_suppressor(_8298,_8370,_8370) :- not tumor_suppressor(_8298).
-drug_induced(_9828,_9830,_9832,_9860,_9866) :- insert_abducible(drug_induced(_9828,_9830,_9832),_9860,_9866).
-not_drug_induced(_9962,_9964,_9966,_10006,_10012) :- insert_abducible(not drug_induced(_9962,_9964,_9966),_10006,_10012).
-drug_inhibited(_10108,_10110,_10112,_10140,_10146) :- insert_abducible(drug_inhibited(_10108,_10110,_10112),_10140,_10146).
-not_drug_inhibited(_10242,_10244,_10246,_10286,_10292) :- insert_abducible(not drug_inhibited(_10242,_10244,_10246),_10286,_10292).
-active_ab(_10480,_10482,_10790) :- not_absent(_10482,[],_10634),not_inhibited(_10480,_10482,_10634,_10732),normally_active(_10480,_10482,_10732,_10790).
-
-active_ab(_10442,_10444,_11024) :- not_absent(_10444,[],_10974),externally_induced(_10442,_10444,_10974,_11024).
-
-:- table active_ab/3.
-active(_11132,_11138,_11144,_11150) :- active_ab(_11132,_11138,_11226),produce_context(_11150,_11144,_11226).
-active_star1(_11296,_11302,_11484,_11484) :- [_11296,_11302]\=[_10480,_10482].
-active_star1(_11296,_10482,_11320,_11326) :- absent(_10482,_11320,_11326).
-active_star1(_10480,_10482,_11320,_11326) :- inhibited(_10480,_10482,_11320,_11326).
-active_star1(_10480,_10482,_11320,_11326) :- not_normally_active(_10480,_10482,_11320,_11326).
-active_star2(_11296,_11302,_12078,_12078) :- [_11296,_11302]\=[_10442,_10444].
-active_star2(_11296,_10444,_11408,_11326) :- absent(_10444,_11408,_11326).
-active_star2(_10442,_10444,_11408,_11326) :- not_externally_induced(_10442,_10444,_11408,_11326).
-not_active(_11296,_11302,_11320,_11326) :- copy_term([_11296,_11302],[_11390,_11396]),active_star1(_11390,_11396,_11320,_11408),copy_term([_11296,_11302],[_11984,_11990]),active_star2(_11984,_11990,_11408,_11326).
-
-normally_active_ab(_12456,_12458,_12710) :- not_absent(_12458,[],_12610),reaction(rct(_12486,_12458),_12610,_12660),active(_12456,_12486,_12660,_12710).
-
-:- table normally_active_ab/3.
-normally_active(_12818,_12824,_12830,_12836) :- normally_active_ab(_12818,_12824,_12912),produce_context(_12836,_12830,_12912).
-normally_active_star1(_12982,_12988,_13122,_13122) :- [_12982,_12988]\=[_12456,_12458].
-normally_active_star1(_12982,_12458,_13006,_13012) :- absent(_12458,_13006,_13012).
-normally_active_star1(_12982,_12458,_13006,_13012) :- not_reaction(rct(_12486,_12458),_13006,_13012).
-normally_active_star1(_12456,_12458,_13006,_13012) :- reaction(rct(_12486,_12458),_13006,_13532),not_active(_12456,_12486,_13532,_13012).
-not_normally_active(_12982,_12988,_13006,_13012) :- normally_active_star1(_12982,_12988,_13006,_13012).
-
-inhibited_ab(_13738,_13740,_13908) :- not_absent(_13740,[],_13858),normally_inhibited(_13738,_13740,_13858,_13908).
-
-inhibited_ab(_13700,_13702,_14142) :- not_absent(_13702,[],_14092),externally_inhibited(_13700,_13702,_14092,_14142).
-
-:- table inhibited_ab/3.
-inhibited(_14250,_14256,_14262,_14268) :- inhibited_ab(_14250,_14256,_14344),produce_context(_14268,_14262,_14344).
-inhibited_star1(_14414,_14420,_14602,_14602) :- [_14414,_14420]\=[_13738,_13740].
-inhibited_star1(_14414,_13740,_14438,_14444) :- absent(_13740,_14438,_14444).
-inhibited_star1(_13738,_13740,_14438,_14444) :- not_normally_inhibited(_13738,_13740,_14438,_14444).
-inhibited_star2(_14414,_14420,_15026,_15026) :- [_14414,_14420]\=[_13700,_13702].
-inhibited_star2(_14414,_13702,_14526,_14444) :- absent(_13702,_14526,_14444).
-inhibited_star2(_13700,_13702,_14526,_14444) :- not_externally_inhibited(_13700,_13702,_14526,_14444).
-not_inhibited(_14414,_14420,_14438,_14444) :- copy_term([_14414,_14420],[_14508,_14514]),inhibited_star1(_14508,_14514,_14438,_14526),copy_term([_14414,_14420],[_14932,_14938]),inhibited_star2(_14932,_14938,_14526,_14444).
-
-normally_inhibited_ab(_15404,_15406,_15668) :- not_absent(_15406,[],_15554),inhibitor(_15406,_15432,_15554,_15610),active(_15404,_15432,_15610,_15668).
-
-:- table normally_inhibited_ab/3.
-normally_inhibited(_15776,_15782,_15788,_15794) :- normally_inhibited_ab(_15776,_15782,_15870),produce_context(_15794,_15788,_15870).
-normally_inhibited_star1(_15940,_15946,_16080,_16080) :- [_15940,_15946]\=[_15404,_15406].
-normally_inhibited_star1(_15940,_15406,_15964,_15970) :- absent(_15406,_15964,_15970).
-normally_inhibited_star1(_15940,_15406,_15964,_15970) :- not_inhibitor(_15406,_15432,_15964,_15970).
-normally_inhibited_star1(_15404,_15406,_15964,_15970) :- inhibitor(_15406,_15432,_15964,_16498),not_active(_15404,_15432,_16498,_15970).
-not_normally_inhibited(_15940,_15946,_15964,_15970) :- normally_inhibited_star1(_15940,_15946,_15964,_15970).
-
-inactive_ab(_16730,_16732,_16784) :- inhibited(_16730,_16732,[],_16784).
-
-inactive_ab(_16674,_16676,_17108) :- not_active(_16674,_16676,[],_17000),reaction(rct(_16706,_16676),_17000,_17058),inactive(_16674,_16706,_17058,_17108).
-
-:- table inactive_ab/3.
-inactive(_17216,_17222,_17228,_17234) :- inactive_ab(_17216,_17222,_17310),produce_context(_17234,_17228,_17310).
-inactive_star1(_17380,_17386,_17568,_17568) :- [_17380,_17386]\=[_16730,_16732].
-inactive_star1(_16730,_16732,_17404,_17410) :- not_inhibited(_16730,_16732,_17404,_17410).
-inactive_star2(_17380,_17386,_17866,_17866) :- [_17380,_17386]\=[_16674,_16676].
-inactive_star2(_16674,_16676,_17492,_17410) :- active(_16674,_16676,_17492,_17410).
-inactive_star2(_16674,_16676,_17492,_17410) :- not_reaction(rct(_16706,_16676),_17492,_17410).
-inactive_star2(_16674,_16676,_17492,_17410) :- reaction(rct(_16706,_16676),_17492,_18314),not_inactive(_16674,_16706,_18314,_17410).
-not_inactive(_17380,_17386,_17404,_17410) :- copy_term([_17380,_17386],[_17474,_17480]),inactive_star1(_17474,_17480,_17404,_17492),copy_term([_17380,_17386],[_17772,_17778]),inactive_star2(_17772,_17778,_17492,_17410).
-
-externally_induced_ab(_18482,_18484,_18536) :- drug_active(_18482,_18484,[],_18536).
-
-:- table externally_induced_ab/3.
-externally_induced(_18644,_18650,_18656,_18662) :- externally_induced_ab(_18644,_18650,_18738),produce_context(_18662,_18656,_18738).
-externally_induced_star1(_18808,_18814,_18948,_18948) :- [_18808,_18814]\=[_18482,_18484].
-externally_induced_star1(_18482,_18484,_18832,_18838) :- not_drug_active(_18482,_18484,_18832,_18838).
-not_externally_induced(_18808,_18814,_18832,_18838) :- externally_induced_star1(_18808,_18814,_18832,_18838).
-
-drug_active_ab(_19200,_19202,_19412) :- exists(_19200,_19214,[drug_induced(_19200,_19214,_19202)],_19348),possible_drug_effect(_19214,induce,_19202,_19348,_19412).
-
-:- table drug_active_ab/3.
-drug_active(_19528,_19534,_19540,_19546) :- drug_active_ab(_19528,_19534,_19622),produce_context(_19546,_19540,_19622).
-drug_active_star1(_19692,_19698,_19832,_19832) :- [_19692,_19698]\=[_19200,_19202].
-drug_active_star1(_19200,_19698,_19716,_19722) :- not_exists(_19200,_19214,_19716,_19722).
-drug_active_star1(_19200,_19202,_19716,_19722) :- exists(_19200,_19214,_19716,_20130),not_possible_drug_effect(_19214,induce,_19202,_20130,_19722).
-drug_active_star1(_19200,_19202,_19716,_19722) :- exists(_19200,_19214,_19716,_20366),possible_drug_effect(_19214,induce,_19202,_20366,_20436),not_drug_induced(_19200,_19214,_19202,_20436,_19722).
-not_drug_active(_19692,_19698,_19716,_19722) :- drug_active_star1(_19692,_19698,_19716,_19722).
-
-externally_inhibited_ab(_20634,_20636,_20846) :- exists(_20634,_20648,[drug_inhibited(_20634,_20648,_20636)],_20782),possible_drug_effect(_20648,inhibit,_20636,_20782,_20846).
-
-:- table externally_inhibited_ab/3.
-externally_inhibited(_20962,_20968,_20974,_20980) :- externally_inhibited_ab(_20962,_20968,_21056),produce_context(_20980,_20974,_21056).
-externally_inhibited_star1(_21126,_21132,_21266,_21266) :- [_21126,_21132]\=[_20634,_20636].
-externally_inhibited_star1(_20634,_21132,_21150,_21156) :- not_exists(_20634,_20648,_21150,_21156).
-externally_inhibited_star1(_20634,_20636,_21150,_21156) :- exists(_20634,_20648,_21150,_21564),not_possible_drug_effect(_20648,inhibit,_20636,_21564,_21156).
-externally_inhibited_star1(_20634,_20636,_21150,_21156) :- exists(_20634,_20648,_21150,_21800),possible_drug_effect(_20648,inhibit,_20636,_21800,_21870),not_drug_inhibited(_20634,_20648,_20636,_21870,_21156).
-not_externally_inhibited(_21126,_21132,_21150,_21156) :- externally_inhibited_star1(_21126,_21132,_21150,_21156).
-
-false_star1(_22154,_22256) :- not_drug_induced(phase0,drug,_22088,_22154,_22256).
-false_star1(_22154,_22256) :- drug_induced(phase0,drug,_22088,_22154,_22448),not_drug_inhibited(phase0,drug,_22088,_22448,_22256).
-false_star2(_22160,_22256) :- not_drug_induced(phase0,drug,apoptosis,_22160,_22256).
-not_false :- copy_term([],[]),false_star1,copy_term([],[]),false_star2.
-:- not_false.
+exists(_h11511,_h11512,_h11521,_h11521) :- exists(_h11511,_h11512).
+not_exists(_h11511,_h11512,_h11592,_h11592) :- not exists(_h11511,_h11512).
+possible_drug_effect(_h11641,_h11642,_h11643,_h11654,_h11654) :- possible_drug_effect(_h11641,_h11642,_h11643).
+not_possible_drug_effect(_h11641,_h11642,_h11643,_h11758,_h11758) :- not possible_drug_effect(_h11641,_h11642,_h11643).
+absent(_h11815,_h11822,_h11822) :- absent(_h11815).
+not_absent(_h11815,_h11888,_h11888) :- not absent(_h11815).
+reaction(_h11929,_h11936,_h11936) :- reaction(_h11929).
+not_reaction(_h11929,_h12006,_h12006) :- not reaction(_h11929).
+inhibitor(_h12047,_h12048,_h12057,_h12057) :- inhibitor(_h12047,_h12048).
+not_inhibitor(_h12047,_h12048,_h12134,_h12134) :- not inhibitor(_h12047,_h12048).
+oncogene(_h12183,_h12190,_h12190) :- oncogene(_h12183).
+not_oncogene(_h12183,_h12260,_h12260) :- not oncogene(_h12183).
+tumor_suppressor(_h12301,_h12308,_h12308) :- tumor_suppressor(_h12301).
+not_tumor_suppressor(_h12301,_h12394,_h12394) :- not tumor_suppressor(_h12301).

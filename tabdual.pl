@@ -470,14 +470,13 @@ transformBody(B, (ProB, NF), I, O) :-
 
 % transformQuery(Q, I, O, Lim) :-
 transformQuery(Q, I, O) :-
-	% createApostBody(Q, ProQ, I, T),
+	createApostBody(Q, ProQ, I, T),
 	% limitQuery(ProQ, Lim, Rs),
-	% NF =.. ['not_false'|[T,O]],
-	% ProQ, NF.
+	(mode(table), NF =.. ['not_false'|[T,O]],
+	ProQ, NF);
 	% Rs, NF.
-	transformBody(Q, ProQ, I, O),
-	% write(ProQ).
-	ProQ.
+	(mode(vneg), transformBody(Q, ProQ, I, O),
+	ProQ).
 
 limitQuery((Q, QQ), Lim, Acc) :- !,
 	Res =.. [limit|[Lim,Q]],

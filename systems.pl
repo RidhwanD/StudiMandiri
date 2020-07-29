@@ -196,7 +196,7 @@ insert_abducible(A, I, O) :-
 	\+ member(A, I), !, append(I, [A], O).
 insert_abducible(A, I, I) :-
 	(mode(table); mode(vneg)),
-	negate(A, NA), \+ member(NA, I), !.
+	negate(A, NA), \+ member(NA, I), member(A,I), !.
 	
 insert_abducible(not A, Pos<>Neg, Pos<>O) :-
 	mode(split),
@@ -318,7 +318,7 @@ genNegList([H1|T1],[H1|T2]) :-
 
 not_false(I) :-
 	forall(ic(X), validate_negation(X,I)).
-
+	
 validate_negation(L1,L2) :-
 	\+ subset(L1, L2).
 
@@ -329,7 +329,7 @@ negateRest(L, L2, O) :-
 produce_contexts(O, O, []).
 produce_contexts(O, L2, [Sub|Subs]) :-
 	produce_context(O1, L2, Sub),
-	produce_contexts(O, O1, Subs).
+	produce_contexts(Oo, O1, Subs).
 produce_contexts(O, L2, [Sub|Subs]) :-
 	\+ produce_context(_, L2, Sub),
 	produce_contexts(O, L2, Subs).
@@ -341,3 +341,8 @@ negateAll([H1|T1], [H2|T2]) :-
   
 appendSump([], X, X).
 appendSump([X|Y], Z, ['_'|W]) :- appendSump(Y,Z,W).
+
+subset([], _).
+subset([L|L1], L2):-
+	member(L, L2),
+	subset(L1, L2).

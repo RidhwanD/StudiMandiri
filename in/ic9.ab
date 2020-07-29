@@ -1,6 +1,7 @@
-abds([a/1,b/1]).
+abds([a/1,b/1,c/1]).
 p(X) <- a(X).
 q(X) <- b(X).
+t(X) <- c(X).
 r <- a(1), not q(1), a(2), not q(2), a(3), not q(3), a(4), not q(4), a(5), not q(5), a(6), not q(6), a(7), not q(7), a(8), not q(8), a(9), not q(9).
 r <- p(1), p(2), p(3), p(4), p(5), p(6), p(7), p(8), p(9).
 <- p(X), not q(X).

@@ -1,0 +1,7 @@
+abds([q/1,r/1,t/1]).
+
+p(X) <- q(0), not q(1), s(X).
+s(X) <- not t(X).
+u(X) <- not p(X).
+<- q(X), r(X).
+<- u(X).
