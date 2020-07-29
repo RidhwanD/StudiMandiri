@@ -247,11 +247,11 @@ generateDualRules(H, R) :- !,
 	generateTauMinHead(F, L, I, O, HRes),
 	generateTauMinBody(F, L, R, BRes, I, O, 1, NumRule),
 	writeRule(HRes, BRes),
-	((mode(vneg), F = false, write(':- not_false.')); true).
+	(((mode(split); mode(vneg)), F = false, write(':- u_star.')); true).
 
-generateTauMinHead(false, L, _, _, HRes) :- mode(vneg), !,
-	concat_atom(['not_', false], NotF),
-	HRes =.. [NotF|L].
+generateTauMinHead(false, L, _, _, HRes) :- (mode(split); mode(vneg)), !,
+	% concat_atom(['not_', false], NotF),
+	HRes =.. ['u_star'|L].
 generateTauMinHead(F, L, I, O, HRes) :- !,
 	concat_atom(['not_', F], NotF),
 	append(L, [I, O], NewL),
@@ -259,7 +259,8 @@ generateTauMinHead(F, L, I, O, HRes) :- !,
 	
 generateTauMinBody(_, _, [], _, _, _, _, _) :- !.
 generateTauMinBody(Fun, Var, [rule(R, B)|[]], BRes, I, O, Num, 1) :- !,
-	concat_atom([Fun, '_star', Num], SStar),
+	(((mode(split); mode(vneg)), Fun = false, concat_atom(['u_star', Num], SStar)); 
+	concat_atom([Fun, '_star', Num], SStar)),
 	append(Var, [I, O], NewAR),
 	((mode(vneg), Fun = false, BRes =.. [SStar| Var]);		%% NEWEST VALNEG.
 	BRes =.. [SStar| NewAR]),
@@ -267,13 +268,14 @@ generateTauMinBody(Fun, Var, [rule(R, B)|[]], BRes, I, O, Num, 1) :- !,
 	append(Var, [T, T], EqAR),
 	BEq =.. [SStar|EqAR],
 	writeSecDual1(BEq, Var, Arg),
-	(((mode(table);mode(split)), generateTauStar(SStar, Var, Arg, B, I, O, []));
-	(mode(vneg), (
+	((mode(table), generateTauStar(SStar, Var, Arg, B, I, O, []));
+	((mode(split); mode(vneg)), (
 		(Fun = false, !, transformIC(SStar, rule(R, B)));
 		(generateTauStar(SStar, Var, Arg, B, I, O, []))
 	))).
 generateTauMinBody(Fun, Var, [rule(R, B)|[]], (Copy, BRes), I, O, Num, _) :- !,
-	concat_atom([Fun, '_star', Num], SStar),
+	(((mode(split); mode(vneg)), Fun = false, concat_atom(['u_star', Num], SStar)); 
+	concat_atom([Fun, '_star', Num], SStar)),
 	length(Var,N), generateVarList(N,L2),
 	Copy =.. [copy_term|[Var, L2]],
 	append(L2, [I, O], NewAR),
@@ -283,13 +285,14 @@ generateTauMinBody(Fun, Var, [rule(R, B)|[]], (Copy, BRes), I, O, Num, _) :- !,
 	append(Var, [T, T], EqAR),
 	BEq =.. [SStar|EqAR],
 	writeSecDual1(BEq, Var, Arg),
-	(((mode(table);mode(split)), generateTauStar(SStar, Var, Arg, B, I, O, []));
-	(mode(vneg), (
+	((mode(table), generateTauStar(SStar, Var, Arg, B, I, O, []));
+	((mode(split); mode(vneg)), (
 		(Fun = false, !, transformIC(SStar, rule(R, B)));
 		(generateTauStar(SStar, Var, Arg, B, I, O, []))
 	))).
 generateTauMinBody(Fun, Var, [rule(R, B)|L], (Copy, BRes, BBRes), I, O, Num, NumRule) :-
-	concat_atom([Fun, '_star', Num], SStar),
+	(((mode(split); mode(vneg)), Fun = false, concat_atom(['u_star', Num], SStar)); 
+	concat_atom([Fun, '_star', Num], SStar)),
 	length(Var,N), generateVarList(N,L2),
 	append(L2, [I, O2], NewAR),
 	Copy =.. [copy_term|[Var, L2]],
@@ -299,8 +302,8 @@ generateTauMinBody(Fun, Var, [rule(R, B)|L], (Copy, BRes, BBRes), I, O, Num, Num
 	append(Var, [T, T], EqAR),
 	BEq =.. [SStar|EqAR],
 	writeSecDual1(BEq, Var, Arg),
-	(((mode(table);mode(split)), generateTauStar(SStar, Var, Arg, B, I, O, []));
-	(mode(vneg), (
+	((mode(table), generateTauStar(SStar, Var, Arg, B, I, O, []));
+	((mode(split); mode(vneg)), (
 		(Fun = false, !, transformIC(SStar, rule(R, B)));
 		(generateTauStar(SStar, Var, Arg, B, I, O, []))
 	))),
@@ -426,9 +429,10 @@ transformWithoutIC :-
 transformWithoutIC.
 
 generateDualNoIC :-
+	(mode(table),
 	NF =.. ['not_false'|[I,I]],
 	writeRule(NF, true),
-	nl, nl.
+	nl, nl); (mode(split); mode(vneg)).
 	
 % ---- End of Transformation without IC ---- %
 
@@ -462,19 +466,16 @@ transformIC(SStar, rule(false, B)) :-
 
 transformBody((B, BB), (ProB, NF, ProBB), I, O) :- !,
 	alpha(B, ProB, I, IO),
-	NF =.. [not_false|[IO]],
+	NF =.. [test_IC|[IO]],
 	transformBody(BB, ProBB, IO, O).
 transformBody(B, (ProB, NF), I, O) :-
 	alpha(B, ProB, I, O),
-	NF =.. [not_false|[O]].
+	NF =.. [test_IC|[O]].
 
-% transformQuery(Q, I, O, Lim) :-
 transformQuery(Q, I, O) :-
 	createApostBody(Q, ProQ, I, T),
-	% limitQuery(ProQ, Lim, Rs),
 	(mode(table), NF =.. ['not_false'|[T,O]],
 	ProQ, NF);
-	% Rs, NF.
 	(mode(vneg), transformBody(Q, ProQ, I, O),
 	ProQ).
 

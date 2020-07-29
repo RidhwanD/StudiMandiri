@@ -1,5 +1,3 @@
-:- set_prolog_stack(trail,  limit(3 000 000 000)).
-
 getAbducibles(A) :-
 	abds(A), !.
 getAbducibles([]).
@@ -306,24 +304,13 @@ genNegList([H1|T1],[H2|T2]) :-
 genNegList([H1|T1],[H1|T2]) :-
 	genNegList(T1,T2).
 
-% validate_negation([],_,_) :- !, false.
-% validate_negation([L|L1], L2, O) :-
-%	((member(L, L2), !, validate_negation(L1, L2, O)); 
-%	(negateRest([L|L1],L2, O))).
-
-% validate_negation(L1,L2,_) :-
-% 	subset(L1, L2), !, false.
-% validate_negation(L1,L2,O) :-
-% 	negateRest(L1,L2, O).
-
-not_false(I) :-
-	forall(ic(X), validate_negation(X,I)).
+test_IC(I) :-
+	forall(ic(X), check_subset(X,I)).
 	
-validate_negation(L1,L2) :-
+check_subset(L1,L2) :-
 	\+ subset(L1, L2).
 
 negateRest(L, L2, O) :-
-	% negateAll(L, NotL), genSubset(NotL, Sub), Sub \= [], produce_context(O, L2, Sub).
 	findall(Sub, (genNegList(Sub,L), Sub \= L), Subs), produce_contexts(O, L2, Subs).
 
 produce_contexts(O, O, []).
