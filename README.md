@@ -5,4 +5,4 @@ There are 3 mode:
   - 'vneg' is the one with new transformation for IC.
   - 'split' is the one with new transformation for IC and the abducible is divided into positive and negative literals.
 
-The use of reduced tabled predicates is manually controlled by switching checkAndWriteTable(H, R) and writeTable(H) in transformRule/2 rule.
+The use of reduced tabled predicates is manually controlled by switching checkAndWriteTable(H, R) and writeTable(H) in transformRule/0 rule.
