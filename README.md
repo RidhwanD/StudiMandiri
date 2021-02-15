@@ -1,5 +1,5 @@
 # TabdualSC
-The implementation code that is related to the paper "[Tabling Optimization for Contextual Abduction](https://cgi.cse.unsw.edu.au/~eptcs/paper.cgi?ICLP2020.20)" which is published to ICLP 2020. This contains a version of Tabdual using a new transformation for ICs involving subset checking, as well as tabling optimization using reduced tabled predicates.
+The implementation code that is related to the paper "[Tabling Optimization for Contextual Abduction](https://cgi.cse.unsw.edu.au/~eptcs/paper.cgi?ICLP2020.20)" which is published in ICLP 2020. This contains a version of Tabdual using a new transformation for ICs involving subset checking, as well as tabling optimization using reduced tabled predicates.
 There are 3 mode:
   - 'table' is the one with dual program transformation for IC.
   - 'vneg' is the one with new transformation for IC using subset checking.
